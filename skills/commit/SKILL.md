@@ -12,7 +12,7 @@ description: 创建约定式提交
 ## 选项
 
 - `--no-verify`：跳过预提交检查
-- `--style=simple|full`：simple（默认）= 单行；full = 正文+页脚
+- `--style=simple|full`：full（默认）= 正文+页脚；simple = 单行
 - `--type=<type>`：强制指定类型，覆盖自动检测
 
 ## 流程
@@ -26,11 +26,13 @@ description: 创建约定式提交
 - 读取 `package.json` 的 `scripts` 字段，匹配以下模式：
   - 类型检查：`typecheck`、`type-check`、`ts:check`、`check:types`、`tsc`
   - 代码质量：`lint`、`lint:check`、`eslint`、`biome:lint`
-  - 格式化：`format`、`format:check`、`prettier`、`prettier:check`、`biome:format`
+  - 格式化：`format`、`format:write`、`prettier`、`biome:format`
 
 **回退：**
 
-- 如 `package.json` 不存在或不含匹配的脚本，检查配置文件（`tsconfig.json`、`.eslintrc.*`、`eslint.config.*`、`biome.json`、`.prettierrc*`）推断工具链，用对应工具的原生检查命令（如 `npx tsc --noEmit`、`npx eslint .`、`npx prettier --check .`）
+- 如 `package.json` 不存在或不含匹配的脚本，检查配置文件（`tsconfig.json`、`.eslintrc.*`、`eslint.config.*`、`biome.json`、`.prettierrc*`）推断工具链，用对应工具的原生命令（如 `npx tsc --noEmit`、`npx eslint .`、`npx prettier --write .`、`npx biome format --write .`）
+
+**注意：** 格式化命令直接执行写入操作（`--write`），而非仅检查（`--check`）。类型检查和代码质量仍使用只读检查命令。
 
 **完成标准：** 列出所有发现的命令，展示给用户确认后依次执行。任一步失败即停止，输出错误信息，不继续后续步骤。
 
@@ -54,15 +56,7 @@ description: 创建约定式提交
 
 ## 提交格式
 
-**Simple（默认）：**
-
-```
-<emoji> <type>[scope]: <描述>
-```
-
-- `<描述>`：现在时、≤50 字符、首字母大写、不加句号
-
-**Full（`--style=full`）：**
+**Full（默认）：**
 
 ```
 <emoji> <type>[scope]: <描述>
@@ -74,7 +68,14 @@ description: 创建约定式提交
 
 - 正文：解释「改了什么」和「为什么」，项目符号列举，每行 ≤72 字符
 - 页脚：`BREAKING CHANGE:` / `Closes: #123` / `Co-authored-by:`
-- Full 自动触发：破坏性变更、复杂功能、跨系统变更
+
+**Simple（`--style=simple`）：**
+
+```
+<emoji> <type>[scope]: <描述>
+```
+
+- `<描述>`：现在时、≤50 字符、首字母大写、不加句号
 
 ## 类型映射
 
