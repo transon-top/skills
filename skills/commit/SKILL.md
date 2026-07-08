@@ -19,22 +19,23 @@ description: 创建约定式提交
 
 ### 1. 发现检查命令（除非 `--no-verify`）
 
-自动探测项目可用的代码检查命令：
+读取 `package.json` 的 `scripts`，按脚本名语义匹配三类检查命令，每类取首个命中项：
 
-**探测方式：**
+| 类型 | 匹配的脚本名 |
+|------|-------------|
+| 类型检查 | `typecheck`, `type-check`, `check:types`, `ts:check`, `tsc`, `types`, `type`, `ts`, `validate-types` |
+| 代码质量 | `lint`, `lint:check`, `lint:ci`, `eslint`, `lint-staged`, `lint:fix`, `check:lint`, `quality` |
+| 格式化 | `format`, `fmt`, `format:check`, `format:write`, `prettier`, `pretty`, `fmt:check`, `check:format`, `beautify` |
 
-- 读取 `package.json` 的 `scripts` 字段，匹配以下模式：
-  - 类型检查：`typecheck`、`type-check`、`ts:check`、`check:types`、`tsc`
-  - 代码质量：`lint`、`lint:check`、`eslint`、`biome:lint`
-  - 格式化：`format`、`format:write`、`prettier`、`biome:format`
+**名称未命中时**，查阅 [`references/check-command-discovery.md`](references/check-command-discovery.md) 执行命令内容分析、配置文件回退及合并命令扫描。
 
-**回退：**
+**执行规则：**
 
-- 如 `package.json` 不存在或不含匹配的脚本，检查配置文件（`tsconfig.json`、`.eslintrc.*`、`eslint.config.*`、`biome.json`、`.prettierrc*`）推断工具链，用对应工具的原生命令（如 `npx tsc --noEmit`、`npx eslint .`、`npx prettier --write .`、`npx biome format --write .`）
+- 格式化始终执行写入（`--write`），非仅检查（`--check`）
+- 类型检查和代码质量使用只读检查
+- 执行顺序：类型检查 → 代码质量 → 格式化
 
-**注意：** 格式化命令直接执行写入操作（`--write`），而非仅检查（`--check`）。类型检查和代码质量仍使用只读检查命令。
-
-**完成标准：** 列出所有发现的命令，展示给用户确认后依次执行。任一步失败即停止，输出错误信息，不继续后续步骤。
+**完成标准：** 按类型分组列出命令，标注来源（名称匹配/命令分析/回退），合并命令单独列出。用户确认后依次执行，任一步失败即停止并报告错误。
 
 ### 2. 分析变更
 
