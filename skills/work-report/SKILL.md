@@ -1,24 +1,21 @@
 ---
 name: work-report
+argument-hint: '[--days N] [--authors name1,name2] [--mode simple|full]'
 description: 从 git 提交历史整理工作汇报（日报/周报/月报），支持按天数、作者、颗粒度筛选。仅手动 `/work-report` 调用。
 disable-model-invocation: true
 ---
 
-# 工作汇报生成
+# /work-report
 
-从 git 提交历史整理工作汇报（日报/周报/月报）。三个参数，均通过 args 字符串传入，空格分隔：
+从 git 提交历史整理工作汇报（日报/周报/月报）。
 
-| 参数 | 格式 | 默认值 | 说明 |
-| ------ | ------ | -------- | ------ |
-| `--days N` | 整数 | `7` | 汇总最近 N 天的提交 |
-| `--authors name1,name2` | 逗号分隔 | 当前 git user.name | 筛选提交作者 |
-| `--mode simple\|full` | 枚举 | `simple` | 汇报颗粒度 |
+## 选项
 
-参数解析规则：
+- `--days N`：汇总最近 N 天的提交（默认 `7`）
+- `--authors name1,name2`：筛选提交作者，逗号分隔（默认当前 `git config user.name`）
+- `--mode simple|full`：汇报颗粒度（默认 `simple`）
 
-- 缺省参数使用默认值
-- `--authors` 未传时，用 `git config user.name` 作为默认作者
-- 解析完成后向用户确认：日期范围、作者列表、模式，等待确认后再继续
+解析完成后向用户确认日期范围、作者列表、模式，等待确认后再继续。
 
 ## 1. 收集提交
 
