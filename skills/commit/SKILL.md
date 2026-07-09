@@ -1,7 +1,7 @@
 ---
 name: commit
 argument-hint: '[--no-verify] [--style=simple|full] [--type=<type>]'
-description: 创建约定式提交
+description: 创建约定式提交，自动发现检查命令、分析变更、生成并执行提交
 disable-model-invocation: true
 ---
 
@@ -17,7 +17,7 @@ disable-model-invocation: true
 
 ## 流程
 
-### 1. 发现检查命令（除非 `--no-verify`）
+### 1. 发现并执行检查（除非 `--no-verify`）
 
 读取 `package.json` 的 `scripts`，按脚本名语义匹配三类检查命令，每类取首个命中项：
 
@@ -27,33 +27,28 @@ disable-model-invocation: true
 | 代码质量 | `lint`, `lint:check`, `lint:ci`, `eslint`, `lint-staged`, `lint:fix`, `check:lint`, `quality` |
 | 格式化 | `format`, `fmt`, `format:check`, `format:write`, `prettier`, `pretty`, `fmt:check`, `check:format`, `beautify` |
 
-**名称未命中时**，查阅 [`references/check-command-discovery.md`](references/check-command-discovery.md) 执行命令内容分析、配置文件回退及合并命令扫描。
+名称未命中时，查阅 [`references/check-command-discovery.md`](references/check-command-discovery.md) 执行命令内容分析、配置文件回退及合并命令扫描。
 
-**执行规则：**
+简要列出找到的命令（标注来源），然后直接执行：
 
-- 格式化始终执行写入（`--write`），非仅检查（`--check`）
+- 格式化始终执行写入（`--write`）
 - 类型检查和代码质量使用只读检查
 - 执行顺序：类型检查 → 代码质量 → 格式化
-
-**完成标准：** 按类型分组列出命令，标注来源（名称匹配/命令分析/回退），合并命令单独列出。用户确认后依次执行，任一步失败即停止并报告错误。
+- 任一步失败即停止，报告错误
 
 ### 2. 分析变更
 
-对当前分支所有未提交变更执行 `git diff`：
+对未提交变更执行 `git diff`：
 
-- 自动识别提交类型（feat/fix/docs/…），或使用 `--type` 强制指定
-- 自动提取 scope（影响的模块/目录）
-- 检测拆分信号，出现任一情况则建议拆分为多个提交：
-  - 混合类型（feat + fix 同时出现）
-  - 跨多个不相关模块
-  - 源码 + 测试 + 文档混合
-  - 依赖更新与功能代码混合
+- 自动识别提交类型，`--type` 强制覆盖
+- 自动提取 scope
+- 拆分信号（混合类型/跨模块/源码+测试+文档混合/依赖与功能混合）出现时简要标注，仍合并提交
 
-**完成标准：** 类型和 scope 已确定；如检测到拆分信号，列出建议分组，等待用户确认是拆分还是一并提交。
+**完成标准：** 类型和 scope 已确定，描述 ≤50 字符。
 
-### 3. 生成并确认
+### 3. 生成并提交
 
-按 `--style` 生成提交信息，展示给用户确认后执行 `git commit`。
+按 `--style` 生成提交信息，直接执行 `git commit`，不展示确认。
 
 ## 提交格式
 
@@ -80,19 +75,19 @@ disable-model-invocation: true
 
 ## 类型映射
 
-| 类型     | Emoji | 用途     |
-| -------- | ----- | -------- |
-| feat     | ✨    | 新功能   |
-| fix      | 🐛    | Bug 修复 |
-| docs     | 📝    | 文档     |
-| style    | 🎨    | 格式     |
-| refactor | ♻️    | 重构     |
-| perf     | ⚡️    | 性能     |
-| test     | ✅    | 测试     |
-| chore    | 🔧    | 维护     |
-| ci       | 👷    | CI/CD    |
-| build    | 📦    | 构建     |
-| revert   | ⏪    | 回退     |
+| 类型 | Emoji | 用途 |
+| ------ | ------- | ------ |
+| feat | ✨ | 新功能 |
+| fix | 🐛 | Bug 修复 |
+| docs | 📝 | 文档 |
+| style | 🎨 | 格式 |
+| refactor | ♻️ | 重构 |
+| perf | ⚡️ | 性能 |
+| test | ✅ | 测试 |
+| chore | 🔧 | 维护 |
+| ci | 👷 | CI/CD |
+| build | 📦 | 构建 |
+| revert | ⏪ | 回退 |
 
 ## 示例
 
