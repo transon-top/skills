@@ -1,8 +1,8 @@
 ---
 name: commit
-disable-model-invocation: true
 argument-hint: '[--no-verify] [--style=simple|full] [--type=<type>]'
 description: 创建约定式提交
+disable-model-invocation: true
 ---
 
 # /commit
