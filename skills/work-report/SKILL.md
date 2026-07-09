@@ -60,8 +60,8 @@ git log --since="<start-date>" --until="<end-date+1>" --author="<author1>\|<auth
 
 根据 `--mode` 加载对应模板，按模板格式生成汇报，写入 `/tmp/work-report-<end-date>.md`。
 
-- simple 模式：参考 `templates/simple.md` — 按大类分组，`功能域: 一句话描述`，从项目视角阐述功能价值
-- full 模式：参考 `templates/full.md` — 按功能域分组，每节含背景和开发明细，叙述完整连贯
+- simple 模式：参考 `templates/SIMPLE.md` — 按大类分组，`功能域: 一句话描述`，从项目视角阐述功能价值
+- full 模式：参考 `templates/FULL.md` — 按功能域分组，每节含背景和开发明细，叙述完整连贯
 
 **完成标准**：输出文件已写入，所有提交已纳入汇报，格式完全匹配模板要求。
 
