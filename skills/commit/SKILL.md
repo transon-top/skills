@@ -22,7 +22,7 @@ disable-model-invocation: true
 读取 `package.json` 的 `scripts`，按脚本名语义匹配三类检查命令，每类取首个命中项：
 
 | 类型 | 匹配的脚本名 |
-|------|-------------|
+| ------ | ------------- |
 | 类型检查 | `typecheck`, `type-check`, `check:types`, `ts:check`, `tsc`, `types`, `type`, `ts`, `validate-types` |
 | 代码质量 | `lint`, `lint:check`, `lint:ci`, `eslint`, `lint-staged`, `lint:fix`, `check:lint`, `quality` |
 | 格式化 | `format`, `fmt`, `format:check`, `format:write`, `prettier`, `pretty`, `fmt:check`, `check:format`, `beautify` |
@@ -59,7 +59,7 @@ disable-model-invocation: true
 
 **Full（默认）：**
 
-```
+```text
 <emoji> <type>[scope]: <描述>
 
 <正文>
@@ -72,7 +72,7 @@ disable-model-invocation: true
 
 **Simple（`--style=simple`）：**
 
-```
+```text
 <emoji> <type>[scope]: <描述>
 ```
 

@@ -7,14 +7,17 @@
 名称未命中时，扫描所有脚本的 `command` 字符串，按工具签名推断用途：
 
 **类型检查：** 命令含以下任一工具名 → 视为类型检查脚本
+
 - `tsc`、`vue-tsc`、`tsc-files`
 
 **代码质量：** 命令含以下任一工具调用 → 视为代码检查脚本
+
 - `eslint`、`oxlint`
 - `biome lint`
 - `biome check`（且不含 `--write` 标志）
 
 **格式化：** 命令含以下任一工具调用 → 视为格式化脚本
+
 - `prettier`
 - `biome format`
 - `biome check --write`
@@ -27,7 +30,7 @@
 所有脚本均未命中某类型时，检测项目配置文件推断工具链：
 
 | 检测到 | 推断命令 |
-|--------|---------|
+| -------- | --------- |
 | `tsconfig.json` | `npx tsc --noEmit` |
 | `.eslintrc.*` / `eslint.config.*` | `npx eslint .` |
 | `biome.json` | `npx biome check .`（质量）/ `npx biome format --write .`（格式化） |

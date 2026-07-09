@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "release": "node scripts/release.js"
+    "release": "node scripts/release.js",
+    "lint:md": "markdownlint-cli2 \"**/*.md\" \"!node_modules\"",
+    "lint:md:fix": "markdownlint-cli2 --fix \"**/*.md\" \"!node_modules\""
   },
   "keywords": [],
   "author": "",
@@ -17,5 +19,7 @@
     }
   },
   "type": "module",
-  "devDependencies": {}
+  "devDependencies": {
+    "markdownlint-cli2": "^0.23.0"
+  }
 }

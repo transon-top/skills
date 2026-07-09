@@ -46,7 +46,7 @@ cp -r skills/* .claude/skills/
 
 **示例：**
 
-```
+```text
 > /commit
 
 检查命令：未找到（项目无 lint/typecheck 脚本），跳过。
@@ -94,7 +94,7 @@ cp -r skills/* .claude/skills/
 
 ## 项目结构
 
-```
+```text
 skills/
 ├── commit/                  # 约定式提交技能
 │   └── SKILL.md

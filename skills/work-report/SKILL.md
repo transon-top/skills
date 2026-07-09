@@ -9,12 +9,13 @@ disable-model-invocation: true
 从 git 提交历史整理工作汇报（日报/周报/月报）。三个参数，均通过 args 字符串传入，空格分隔：
 
 | 参数 | 格式 | 默认值 | 说明 |
-|------|------|--------|------|
+| ------ | ------ | -------- | ------ |
 | `--days N` | 整数 | `7` | 汇总最近 N 天的提交 |
 | `--authors name1,name2` | 逗号分隔 | 当前 git user.name | 筛选提交作者 |
 | `--mode simple\|full` | 枚举 | `simple` | 汇报颗粒度 |
 
 参数解析规则：
+
 - 缺省参数使用默认值
 - `--authors` 未传时，用 `git config user.name` 作为默认作者
 - 解析完成后向用户确认：日期范围、作者列表、模式，等待确认后再继续
@@ -23,7 +24,7 @@ disable-model-invocation: true
 
 执行 `git log` 收集提交：
 
-```
+```bash
 git log --since="<start-date>" --until="<end-date+1>" --author="<author1>\|<author2>" --format="%h %ad %s" --date=short
 ```
 
@@ -41,7 +42,7 @@ git log --since="<start-date>" --until="<end-date+1>" --author="<author1>\|<auth
 **大类** — 从 conventional commit 前缀映射：
 
 | 前缀 | 大类 |
-|------|------|
+| ------ | ------ |
 | `feat` | 新功能开发 |
 | `fix` | 问题修复 |
 | `style` | UI/UX 优化 |
