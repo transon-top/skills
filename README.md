@@ -1,6 +1,6 @@
 # skills
 
-提供日常开发工作流的自动化能力。目前包含两个技能：约定式提交和工作汇报。
+提供日常开发工作流的自动化能力。目前包含三个技能：约定式提交、工作汇报和架构逆向工程。
 
 ## 安装
 
@@ -34,7 +34,7 @@ cp -r skills/* .claude/skills/
 /commit
 ```
 
-自动检测项目检查命令（lint、typecheck、format），分析当前分支变更，生成提交信息并等你确认。
+自动检测项目检查命令（lint、typecheck、format），分析当前分支变更，生成提交信息并直接执行提交。
 
 **选项：**
 
@@ -52,10 +52,29 @@ cp -r skills/* .claude/skills/
 检查命令：未找到（项目无 lint/typecheck 脚本），跳过。
 变更分析：skills/commit/SKILL.md（新增）
 提交信息：✨ feat(commit): 添加约定式提交技能
-确认执行？ok
 
 [main abc1234] ✨ feat(commit): 添加约定式提交技能
 ```
+
+### /arch-reverse-engineering — 架构逆向工程
+
+对现有代码仓库进行系统性逆向分析，生成产品功能清单、用户故事地图和简历项目经历三份文档。
+
+**基本用法：**
+
+```bash
+/arch-reverse-engineering [目标目录] [-o 输出路径]
+```
+
+默认分析当前工作目录，输出到 `docs/<project-name>/`。
+
+**输出文件：**
+
+| 文件 | 说明 |
+| ------ | ------ |
+| `feature-list.md` | 产品功能清单，含模块划分和功能点 |
+| `user-stories.md` | 用户故事地图，按阶段排列 |
+| `resume-entry.md` | 简历项目经历，含技术决策和面试 Q&A |
 
 ### /work-report — 工作汇报
 
@@ -97,10 +116,17 @@ cp -r skills/* .claude/skills/
 ```text
 skills/
 ├── commit/                  # 约定式提交技能
-│   └── SKILL.md
-└── work-report/             # 工作汇报技能
+│   ├── SKILL.md
+│   └── references/          # 检查命令发现策略
+├── work-report/             # 工作汇报技能
+│   ├── SKILL.md
+│   └── templates/           # 汇报模板
+│       ├── simple.md
+│       └── full.md
+└── arch-reverse-engineering/  # 架构逆向工程技能
     ├── SKILL.md
-    └── templates/           # 汇报模板
-        ├── simple.md
-        └── full.md
+    └── templates/             # 输出模板
+        ├── FEATURE_LIST.md
+        ├── USER_STORIES.md
+        └── RESUME_ENTRY.md
 ```
