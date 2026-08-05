@@ -1,6 +1,6 @@
 # skills
 
-提供日常开发工作流的自动化能力。目前包含三个技能：约定式提交、工作汇报和架构逆向工程。
+提供日常开发工作流的自动化能力。目前包含四个技能：约定式提交、工作汇报、架构逆向工程和 multica 协作。
 
 ## 安装
 
@@ -111,6 +111,26 @@ cp -r skills/* .claude/skills/
 
 汇报输出为 Markdown 文件，保存在 `/tmp/work-report-<日期>.md`。
 
+### /grill-multica — multica 平台人工总控编排
+
+multica 平台的编排技能：磨需求 → 指派 multica agent → 拷问交付，把"本地磨想法"和"multica 分派执行"接成一个闭环。底层平台操作复用 `multica-*` skills，本技能只做编排，不重复平台契约。
+
+**触发入口：**
+
+```bash
+/grill-multica <issue-id>      # 打开已有 issue，拷问交付；需求模糊则先重磨
+/grill-multica 新任务 <主题>    # 从空查起，走磨 → 派流程
+```
+
+**工作流：**
+
+1. **磨需求**：按 grilling 模式追问，磨出任务目标、范围边界（含明确不做的事）、可验证的验收标准
+2. **审定义**：验收标准可验证？范围无歧义？不够格就继续磨
+3. **指派**：`multica issue create/update` 写入 spec，`@mention` 触发 agent 执行
+4. **拷问交付**：拉 PR 到本地，对照 issue 逐条过验收标准、跑测试，疑问写成 comment 发回 agent
+
+依赖 `grilling` 与 `multica-*` skills。
+
 ## 项目结构
 
 ```text
@@ -123,10 +143,12 @@ skills/
 │   └── templates/           # 汇报模板
 │       ├── simple.md
 │       └── full.md
-└── arch-reverse-engineering/  # 架构逆向工程技能
-    ├── SKILL.md
-    └── templates/             # 输出模板
-        ├── FEATURE_LIST.md
-        ├── USER_STORIES.md
-        └── RESUME_ENTRY.md
+├── arch-reverse-engineering/  # 架构逆向工程技能
+│   ├── SKILL.md
+│   └── templates/             # 输出模板
+│       ├── FEATURE_LIST.md
+│       ├── USER_STORIES.md
+│       └── RESUME_ENTRY.md
+└── grill-multica/             # 人工总控工作流技能
+    └── SKILL.md
 ```
