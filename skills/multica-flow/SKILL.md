@@ -24,9 +24,9 @@ user-invocable: true
 ## 阶段〇：查询与打开（两分支共用）
 
 1. 查：`multica issue list --output json` 看池子；需要时 `multica agent list --output json` 确认 assignee
-2. 打开：`multica issue get <id> --output json` 拿 issue 全文；评论两段有界读——`multica issue comment list <id> --roots-only --summary --output json` 扫根，命中相关线程再 `--thread <thread-id> --tail <n>` 展开（不无界全量拉）。若 multica workdir 有对应 `issue_context.md`，读它作为 agent 视角对照
+2. 打开：`multica issue get <id> --output json` 拿 issue 全文；评论两段有界读——`multica issue comment list <id> --roots-only --summary --output json` 扫根，命中相关线程再 `--thread <thread-id> --tail <n>` 展开（不无界全量拉）。agent 首次运行后 workdir 才有 `.agent_context/issue_context.md`（issue ID、触发方式、handoff note、可用 skills）——读到它作 agent 视角对照；新 issue 尚未跑过则无此文件，跳过不查
 
-完成：本地上下文持有 issue 全文、评论流（根扫描 + 已展开的相关线程）、agent 视角对照（`issue_context.md`）；PR 状态留 6 步统一取
+完成：本地上下文持有 issue 全文、评论流（根扫描 + 已展开的相关线程）、agent 视角对照（已有运行时）；PR 状态留 6 步统一取
 
 ## 分支一：打磨需求 → 指派执行
 
@@ -35,24 +35,24 @@ user-invocable: true
 4. **审定义**（派单前质量门）：需求够格才派 — 验收标准可验证？范围无歧义？信息缺口都补了？
    不够 → 回 3；够 → 5
 5. **指派**：
-   - 新任务：按 `references/task-spec.template.md` 填充打磨产物为 spec（写 workdir 内），`multica issue create --title <一句话> --description-file <spec> --allow-external-file --assignee-id <agent-uuid>`；`--assignee <name>` 模糊匹配亦可，`--status todo` 默认即入队，`backlog` 停车
+   - 新任务：按 `references/task-spec.template.md` 填充打磨产物为 spec（写 workdir 内），`multica issue create --title <一句话> --description-file <spec> --allow-external-file --assignee-id <agent-uuid>`；`--assignee <name>` 模糊匹配亦可；不传 `--status` 默认 `todo` 即入队，`--status backlog` 停车；`--project`/`--priority` 按工作区惯例传
    - 已有任务重新打磨后：`multica issue update --description-file <spec>` 更新，再 comment `[@agent](mention://agent/<uuid>)` 触发
    - 契约细节（PR close 规则、comment 格式）触发时加载 `multica-working-on-issues`、`multica-mentioning`
    完成：issue 状态非 backlog，agent 已入队，无未答复的澄清问题
 
 ## 分支二：审查交付、拷问返工
 
-6. 读交付：`multica issue comment list` 读 agent final comment（变更清单/验证结果/PR URL）；`multica issue pull-requests <id>` 拿 PR 状态——读前触发时加载 `multica-working-on-issues`（state 单枚举 merged/closed/draft/open、`reference_only` 隐藏链接、`checks_conclusion`，勿凭分支名或记忆推断）
+6. 读交付：`multica issue comment list` 读 agent final comment（变更清单/验证结果/PR URL）；`multica issue pull-requests <id>` 拿 PR 状态——读前触发时加载 `multica-working-on-issues`（state 单枚举 merged/closed/draft/open、`reference_only` 隐藏链接、`checks_conclusion`，勿凭分支名或记忆推断）；声称与直觉不符时 `multica issue runs <id>` 对执行历史（失败/重跑/中断能解释声称）
 7. 拉代码：PR 拉到本地项目（`gh pr diff` / fetch），与 grill 底座同场，可跑可验
-8. 审查：对照阶段〇 的 `issue_context.md` 找理解偏差（agent 以为的 vs 实际要的）；逐条过验收标准；跑测试验证声称的结果。本地 `code-review` skill 复用
-9. 质疑发回：每条疑问写成 comment `[@agent](mention://agent/<uuid>)` 触发返工或澄清——格式按 `references/comment.template.md` 质疑发回模板（三段自包含：定位 → 证据 → 行动）；写前触发时加载 `multica-mentioning`（UUID 从 `multica agent list --output json` 取，勿用名字）；发布后必读响应 `trigger_outcomes`：`blocked` 对 roster 查 UUID 修正再发，`coalesced`/`deferred`（目标忙，任务已折叠）不重发
-   完成：全部疑问落成 comment 且无 `blocked`，无一留在会话里
+8. 审查：对照阶段〇 的 agent 视角（`.agent_context/issue_context.md`）找理解偏差（agent 以为的 vs 实际要的）；逐条过验收标准；跑测试验证声称的结果。另核 close intent：PR title/body 缺紧邻 `Closes MUL-xxxx` 的 keyword → merge 后 issue 不会自动 done，列入质疑。本地 `code-review` skill 复用。返工轮次：本步疑问发回满 2 轮（第 3 次审查）验收仍不过 → 升级，不再原地打转——回分支一重审 spec（打磨本身可能偏），或 `multica issue update --assignee-id <new>` 换 agent 重派（旧任务仍在飞先 `multica issue cancel-task`）
+9. 质疑发回：每条疑问写成 comment `[@agent](mention://agent/<uuid>)` 触发返工或澄清——格式按 `references/comment.template.md` 质疑发回模板（三段自包含：定位 → 证据 → 行动）；写前触发时加载 `multica-mentioning`（UUID 从 `multica agent list --output json` 取，勿用名字）；后续追问接原 thread：`multica issue comment add <id> --parent <thread-root> --content`。发布后必读响应 `trigger_outcomes`，按 reason_code 分流：`blocked` + `invocation_not_allowed` → roster 查 UUID 修正再发；`target_unavailable`/`runtime_offline` → agent 归档或失联，查 runtime、必要时 `multica issue update --assignee-id` 换 agent，重发无意义；`coalesced`/`deferred`（目标忙，任务已折叠）不重发
+   完成：全部疑问落成 comment 且无 `blocked`（或已升级处理），无一留在会话里
 
 ## 分支三：人工验收（审查通过后）
 
 10. 停留分支：审查通过后保持 PR 分支，**不自动切回 main**——前端等有界面项目需要人工看页面效果
-11. 干净检查：`git status` 确认工作区干净；有未提交改动则提示处理（stash 或提交），不留脏状态到验收
-    完成：分支停 PR 侧，工作区干净，等人工 UI 验收
+11. 干净检查：`git status --porcelain` 空 = 无未提交改动（停在 PR 分支时相对 main 有差异属正常，别误判为脏）；有未提交改动则提示处理（stash 或提交），不留脏状态到验收
+    完成：分支停 PR 侧，无未提交改动，等人工 UI 验收
 
 ## 收尾
 
