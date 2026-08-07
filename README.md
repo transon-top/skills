@@ -26,7 +26,7 @@ cp -r skills/* .claude/skills/
 
 | 技能 | 说明 |
 | ---- | ---- |
-| `/commit` | 约定式提交：分析变更，生成 Conventional Commits 规范提交信息 |
-| `/work-report` | 工作汇报：从 git 提交历史生成日报、周报或月报 |
-| `/arch-reverse-engineering` | 架构逆向工程：系统性分析代码库，生成功能清单、用户故事地图和简历项目经历 |
-| `/multica-flow` | multica 平台人工总控编排：打磨需求 → 指派 agent 执行 → 审查交付、返工闭环 |
+| [`/commit`](skills/commit/SKILL.md) | 约定式提交：分析变更，生成 Conventional Commits 规范提交信息 |
+| [`/work-report`](skills/work-report/SKILL.md) | 工作汇报：从 git 提交历史生成日报、周报或月报 |
+| [`/arch-reverse-engineering`](skills/arch-reverse-engineering/SKILL.md) | 架构逆向工程：系统性分析代码库，生成功能清单、用户故事地图和简历项目经历 |
+| [`/multica-flow`](skills/multica-flow/SKILL.md) | multica 平台人工总控编排：打磨需求 → 指派 agent 执行 → 审查交付、返工闭环 |
