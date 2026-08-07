@@ -1,9 +1,10 @@
-# Comment 模板（人类侧）
+## Comment 模板（人类侧）
 
-> 触发类 comment 必须**自包含**——agent 忙时会被折叠进运行中任务（coalesced/deferred），agent 可能只看到本条 + issue 历史。
+> `<>` = 待替换占位符（替换后不留尖括号）
+> 触发类 comment 必须**自包含**——agent 忙时会被折叠进运行中任务（coalesced/deferred），agent 可能只看到这条 comment + issue 历史。
 > agent final comment 由 working-on-issues 契约约束（变更清单/验证/PR URL），此处不定义。
 
-## 质疑发回（分支二第 9 步）
+## 质疑发回（验收不过时）
 
 每条疑问一条 comment，三段缺一不可：定位 → 证据 → 行动。
 
@@ -17,7 +18,7 @@
 [@agent](mention://agent/<uuid>)
 ```
 
-## 指派触发（分支一第 5 步，重新打磨后）
+## 指派触发（spec 更新后）
 
 只写变更点，不重述全文——spec 本体在 issue description。
 

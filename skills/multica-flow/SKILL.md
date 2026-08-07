@@ -72,7 +72,7 @@ user-invocable: true
      - 回分支一重审 spec（打磨本身可能偏）
      - 或 `multica issue update --assignee-id <new>` 换 agent 重派；旧任务仍在飞先 `multica issue cancel-task`
 9. 质疑发回：
-   - 写 comment：每条疑问一条，格式按 `references/comment.template.md`（三段：定位 → 证据 → 行动）
+   - 写 comment：每条疑问一条，格式按 `references/comment.template.md`
    - 触发：`[@agent](mention://agent/<uuid>)`。UUID 从 `multica agent list --output json` 取，勿用名字。写前加载 `multica-mentioning`
    - 后续追问：接原 thread——`multica issue comment add <id> --parent <thread-root> --content`
    - 发布后必读 `trigger_outcomes`，按 reason_code 分流：
