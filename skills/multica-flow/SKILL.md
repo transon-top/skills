@@ -10,7 +10,8 @@ user-invocable: true
 
 ## 前提
 
-本地已装 multica-ai/multica 官方 `multica-*` skills——平台操作契约在那边，本 skill 只做编排。运行前确认 `multica-*` 在可用 skill 列表；缺失用 `npx skills add multica-ai/multica` 安装。
+本地已装 multica-ai/multica 官方 `multica-*` skills——平台操作契约在那边，本 skill 只做编排；缺失提示可用 `npx skills add multica-ai/multica` 安装。
+另有 `grilling`（打磨追问模式）与 `code-review`（交付审查）全程复用，运行前确认在可用 skill 列表；或功能相似的 skill。
 
 ## 触发入口
 
