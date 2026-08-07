@@ -2,6 +2,7 @@
 
 > 本模板由 multica-flow 分支一打磨后填充；所有「待打磨」标记在派单前必须消除。
 > 派单 CLI 要素（title / assignee / status / project / priority / due-date）不进本文件——它们是 `multica issue create` 参数。
+> profile 亦为 CLI 参数：multica-flow 带 `--profile <name>` 时，create/update 统一追加该 flag；无参数时省略。
 
 ## 背景与目标
 
