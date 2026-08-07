@@ -6,7 +6,11 @@ user-invocable: true
 
 # multica-flow
 
-总控工作流，把"本地打磨想法"和"multica 分派执行"接成一个闭环。底层操作语言在 `multica-*` skills 里，本 skill 只做编排，不重复平台契约。
+总控工作流，把"本地打磨想法"和"multica 分派执行"接成一个闭环。
+
+## 前提
+
+本地已装 multica-ai/multica 官方 `multica-*` skills——平台操作契约在那边，本 skill 只做编排。运行前确认 `multica-*` 在可用 skill 列表；缺失用 `npx skills add multica-ai/multica` 安装。
 
 ## 触发入口
 
