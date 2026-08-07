@@ -19,7 +19,7 @@ user-invocable: true
 - `/multica-flow 新任务 <主题>` — 从空查起，走分支一（打磨需求 → 指派执行）
 - `/multica-flow <issue-id>` — 打开已有 issue（已分派/执行中），默认走分支二（审查交付），需求模糊则先进分支一重新打磨
 
-## 阶段 0：查询与打开（两分支共用）
+## 阶段〇：查询与打开（两分支共用）
 
 1. 查：`multica issue list --output json` 看池子；需要时 `multica agent list --output json` 确认 assignee
 2. 打开：`multica issue get <id> --output json` + `multica issue comment list <id> --output json`，issue 全文 + 全部评论 + 关联 PR 进上下文。若 multica workdir 有对应 `issue_context.md`，读它作为 agent 视角对照
@@ -42,7 +42,7 @@ user-invocable: true
 
 6. 读交付：`multica issue comment list` 读 agent final comment（变更清单/验证结果/PR URL）；`multica issue pull-requests <id>` 拿 PR 状态
 7. 拉代码：PR 拉到本地项目（`gh pr diff` / fetch），与 grill 底座同场，可跑可验
-8. 审查：对照阶段 0 的 `issue_context.md` 找理解偏差（agent 以为的 vs 实际要的）；逐条过验收标准；跑测试验证声称的结果。本地 `code-review` skill 复用
+8. 审查：对照阶段〇 的 `issue_context.md` 找理解偏差（agent 以为的 vs 实际要的）；逐条过验收标准；跑测试验证声称的结果。本地 `code-review` skill 复用
 9. 质疑发回：每条疑问写成 comment `[@agent](mention://agent/<uuid>)` 触发返工或澄清；质疑要具体到可行动（哪个验收标准没满足、哪句声称无验证）
    完成：全部疑问落成 comment，无一留在会话里
 
