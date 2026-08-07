@@ -111,15 +111,15 @@ cp -r skills/* .claude/skills/
 
 汇报输出为 Markdown 文件，保存在 `/tmp/work-report-<日期>.md`。
 
-### /grill-multica — multica 平台人工总控编排
+### /multica-flow — multica 平台人工总控编排
 
 multica 平台的编排技能：磨需求 → 指派 multica agent → 拷问交付，把"本地磨想法"和"multica 分派执行"接成一个闭环。底层平台操作复用 `multica-*` skills，本技能只做编排，不重复平台契约。
 
 **触发入口：**
 
 ```bash
-/grill-multica <issue-id>      # 打开已有 issue，拷问交付；需求模糊则先重磨
-/grill-multica 新任务 <主题>    # 从空查起，走磨 → 派流程
+/multica-flow <issue-id>      # 打开已有 issue，拷问交付；需求模糊则先重磨
+/multica-flow 新任务 <主题>    # 从空查起，走磨 → 派流程
 ```
 
 **工作流：**
@@ -149,6 +149,6 @@ skills/
 │       ├── FEATURE_LIST.md
 │       ├── USER_STORIES.md
 │       └── RESUME_ENTRY.md
-└── grill-multica/             # 人工总控工作流技能
+└── multica-flow/              # 人工总控工作流技能
     └── SKILL.md
 ```

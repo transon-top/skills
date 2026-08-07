@@ -1,17 +1,17 @@
 ---
-name: grill-multica
-description: 人工总控工作流：磨需求 → 指派 multica agent → 拷问交付。斜杠触发（/grill-multica）。
+name: multica-flow
+description: 人工总控工作流：磨需求 → 指派 multica agent → 拷问交付。斜杠触发（/multica-flow）。
 user-invocable: true
 ---
 
-# grill-multica
+# multica-flow
 
 总控工作流，把"本地磨想法"和"multica 分派执行"接成一个闭环。底层操作语言在 `multica-*` skills 里，本 skill 只做编排，不重复平台契约。
 
 ## 触发入口
 
-- `/grill-multica <issue-id>` — 打开已有 issue（已分派/执行中），默认走分支二（拷问），需求模糊则先进分支一重磨
-- `/grill-multica 新任务 <主题>` — 从空查起，走分支一（磨 → 派）
+- `/multica-flow <issue-id>` — 打开已有 issue（已分派/执行中），默认走分支二（拷问），需求模糊则先进分支一重磨
+- `/multica-flow 新任务 <主题>` — 从空查起，走分支一（磨 → 派）
 
 ## 阶段 0：查询与打开（两分支共用）
 
