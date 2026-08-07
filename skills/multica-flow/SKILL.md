@@ -30,12 +30,12 @@ user-invocable: true
 
 ## 分支一：打磨需求 → 指派执行
 
-3. **Grill 打磨需求**：按 grilling 模式追问 — 一次一问、每问给推荐答案、事实查环境不查人、决策交给人。底座是本地项目 repo（`CONTEXT.md`/ADR 在本地演进）。打磨出：任务目标、范围边界（含明确不做的事）、可验证的验收标准
+3. **Grill 打磨需求**：按 grilling 模式追问 — 一次一问、每问给推荐答案、事实查环境不查人、决策交给人。底座是本地项目 repo（`CONTEXT.md`/ADR 在本地演进）。打磨出：任务目标、范围边界（含明确不做的事）、可验证的验收标准——要素对齐 `references/task-spec.template.md`
    完成：验收标准每条都可用命令/状态断言，无人再能补充影响行为的信息
 4. **审定义**（派单前质量门）：需求够格才派 — 验收标准可验证？范围无歧义？信息缺口都补了？
    不够 → 回 3；够 → 5
 5. **指派**：
-   - 新任务：`multica issue create --description-file <打磨完成的spec> --assignee <agent-id>`（spec 写 workdir 内）
+   - 新任务：按 `references/task-spec.template.md` 填充打磨产物为 spec（写 workdir 内），`multica issue create --title <一句话> --description-file <spec> --allow-external-file --assignee-id <agent-uuid>`；`--assignee <name>` 模糊匹配亦可，`--status todo` 默认即入队，`backlog` 停车
    - 已有任务重新打磨后：`multica issue update --description-file <spec>` 更新，再 comment `[@agent](mention://agent/<uuid>)` 触发
    - 契约细节（PR close 规则、comment 格式）触发时加载 `multica-working-on-issues`、`multica-mentioning`
    完成：issue 状态非 backlog，agent 已入队，无未答复的澄清问题
@@ -45,7 +45,7 @@ user-invocable: true
 6. 读交付：`multica issue comment list` 读 agent final comment（变更清单/验证结果/PR URL）；`multica issue pull-requests <id>` 拿 PR 状态——读前触发时加载 `multica-working-on-issues`（state 单枚举 merged/closed/draft/open、`reference_only` 隐藏链接、`checks_conclusion`，勿凭分支名或记忆推断）
 7. 拉代码：PR 拉到本地项目（`gh pr diff` / fetch），与 grill 底座同场，可跑可验
 8. 审查：对照阶段〇 的 `issue_context.md` 找理解偏差（agent 以为的 vs 实际要的）；逐条过验收标准；跑测试验证声称的结果。本地 `code-review` skill 复用
-9. 质疑发回：每条疑问写成 comment `[@agent](mention://agent/<uuid>)` 触发返工或澄清——写前触发时加载 `multica-mentioning`（UUID 从 `multica agent list --output json` 取，勿用名字）；发布后必读响应 `trigger_outcomes`：`blocked` 对 roster 查 UUID 修正再发，`coalesced`/`deferred`（目标忙，任务已折叠）不重发；质疑要具体到可行动（哪个验收标准没满足、哪句声称无验证）
+9. 质疑发回：每条疑问写成 comment `[@agent](mention://agent/<uuid>)` 触发返工或澄清——格式按 `references/comment.template.md` 质疑发回模板（三段自包含：定位 → 证据 → 行动）；写前触发时加载 `multica-mentioning`（UUID 从 `multica agent list --output json` 取，勿用名字）；发布后必读响应 `trigger_outcomes`：`blocked` 对 roster 查 UUID 修正再发，`coalesced`/`deferred`（目标忙，任务已折叠）不重发
    完成：全部疑问落成 comment 且无 `blocked`，无一留在会话里
 
 ## 分支三：人工验收（审查通过后）
