@@ -1,8 +1,9 @@
-# 任务：<一句话标题，与 issue title 一致>
+## 任务：<一句话标题，与 issue title 一致>
 
 > 本模板由 multica-flow 分支一打磨后填充；所有「待打磨」标记在派单前必须消除。
 > 派单 CLI 要素（title / assignee / status / project / priority / due-date）不进本文件——它们是 `multica issue create` 参数。
 > profile 亦为 CLI 参数：multica-flow 带 `--profile <name>` 时，create/update 统一追加该 flag；无参数时省略。
+> 称谓约定：本文「合并请求」为通用称谓——GitHub 称 PR、GitLab 称 MR，全篇统一用「合并请求」。
 
 ## 背景与目标
 
@@ -31,14 +32,14 @@
 ## 上下文
 
 - 仓库 / 本地路径：<repo URL 或 workdir 内路径>
-- 相关 issue / PR：<引用，便于 agent 追溯>
+- 相关 issue / 合并请求：<引用，便于 agent 追溯>
 - workdir 内参考文件：<issue_context.md、ADR、CONTEXT.md 等>
 
 ## 交付要求
 
-- 代码变更需开 PR；PR 标题 / 正文 / 分支带本 issue key（如 `MUL-2759`）以便回链
-- 期望合并后自动关闭本 issue：正文用 `Closes MUL-2759`（close 关键字紧邻 key）
-- final comment 列变更清单 + 验证结果 + PR URL；未开 PR 必须说明原因（未变代码 / 被阻塞）
+- 代码变更需开合并请求；其标题 / 正文 / 分支带本 issue key（如 `MUL-xxxx`）以便回链
+- 期望合并后自动关闭本 issue：title/body 紧邻 `Closes MUL-xxxx`（close 关键字紧邻 key）；缺紧邻则合并后 issue 不会自动 done
+- final comment 列变更清单 + 验证结果 + 合并请求 URL；未开合并请求必须说明原因（未变代码 / 被阻塞）
 - 测试 / 验证方式：<期望的验证命令>
 
 ## 约束

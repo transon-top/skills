@@ -23,7 +23,7 @@
 只写变更点，不重述全文——spec 本体在 issue description。
 
 ```markdown
-## 重新打磨完成，spec 已更新
+## 更新 spec 
 
 - 变更：<改动点>
 - 按最新 spec 重新执行
