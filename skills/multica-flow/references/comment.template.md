@@ -2,11 +2,11 @@
 
 > `<>` = 待替换占位符（替换后不留尖括号）
 > 触发类 comment 必须**自包含**——agent 忙时会被折叠进运行中任务（coalesced/deferred），agent 可能只看到这条 comment + issue 历史。
-> agent final comment 由 working-on-issues 契约约束（变更清单/验证/PR URL），此处不定义。
+> agent final comment 由 `multica-working-on-issues` 契约约束（变更清单/验证/PR URL），此处不定义。
 
 ## 质疑发回（验收不过时）
 
-每条疑问一条 comment，三段缺一不可：定位 → 证据 → 行动。
+每条疑问一条 comment，三段缺一不可：标准/声称 → 现状 → 行动。
 
 ```markdown
 ## 疑问：<验收标准 N / 声称 X>

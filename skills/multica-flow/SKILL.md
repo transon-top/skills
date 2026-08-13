@@ -18,11 +18,11 @@ argument-hint: "[--profile <name> | --P <name>]"
 
 调用原文透传：`ARGUMENTS: $ARGUMENTS`（如 `--profile cloud 移动端布局错乱，指派 agent 调查修复`），按下列规则解析。
 
-- `/multica-flow`（无参）— 罗列能力菜单（新任务打磨指派 / 已有 issue 审查返工 / 人工验收），由用户选下一步
+- `/multica-flow`（无参）— 罗列能力菜单（新任务 → 「打磨指派」 / 已有 issue → 「审查返工」 / 「人工验收」），由用户选下一步
 - `/multica-flow <自然语言描述>` — 自由描述想做的事，如「移动端布局错乱，指派 agent 调查修复」；识别为新任务意图则走「打磨指派」打磨需求，「新任务」显式前缀等价
 - `/multica-flow <issue-id>` — 打开已有 issue（已分派/执行中），默认走「审查返工」，需求模糊则先进「打磨指派」重新打磨
 
-流程分四段：**阶段〇 查询打开 → 打磨指派 → 审查返工 → 人工验收**。正文引用流程一律用「」括名称（如「回『打磨指派』重审 spec」），不得改写为其他叫法。
+流程分四段：**就绪加载 → 打磨指派 → 审查返工 → 人工验收**。正文引用流程一律用「」括名称（如「回『打磨指派』重审 spec」），不得改写为其他叫法。
 
 可选 profile 前缀：`--profile <name>` 或 `--P <name>`（`--P` 为 skill 层简写，执行时统一展开为 `--profile`，CLI 不认）。须位于参数开头，提取后剩余部分按上三入口判定；无前缀 → 默认 profile。
 
@@ -38,7 +38,9 @@ argument-hint: "[--profile <name> | --P <name>]"
 - 只执行确认条目。追问用户主动发起即确认；`blocked` 修正重发属执行细节，不重复确认
 - **单发**：已确认动作每条只执行一次，成功即止。成功以平台侧为准——评论已在 issue 里、issue 已建、状态已变更——不以命令退出码或输出解析为准；报错/解析失败先查平台现状，确未生效才补发一次，生效后绝不重发
 
-## 阶段〇：查询与打开（流程共用）
+## 就绪加载
+
+> 流程共用前置段，各分支入口先过此段
 
 0. **Profile 检查**（有 `--profile` 参数时）：
    - `multica --profile <name> config show` — server_url、workspace_id 非空
@@ -53,7 +55,7 @@ argument-hint: "[--profile <name> | --P <name>]"
    - 评论两段有界读：`comment list <id> --profile <name> --roots-only --summary --output json` 扫根；命中相关线程才用 `--thread <thread-id> --tail <n>` 展开
    - agent 视角对照：workdir 的 `.agent_context/issue_context.md`（issue ID、触发方式、handoff note、可用 skills）。仅 agent 首次运行后存在；新 issue 尚无则跳过
 
-完成：本地持有 issue 全文、评论流（根扫描 + 已展开的相关线程）、agent 视角对照（已有运行时）；合并请求状态（GitHub 称 PR、GitLab 称 MR）留 6 步统一取
+完成：本地持有 issue 全文、评论流（根扫描 + 已展开的相关线程）、agent 视角对照（已有运行时）；合并请求状态（GitHub 称 PR、GitLab 称 MR）留「审查返工」6 步统一取
 
 ## 打磨指派
 
@@ -95,7 +97,7 @@ argument-hint: "[--profile <name> | --P <name>]"
    - 声称与直觉不符：`multica issue runs <id> --profile <name>` 对执行历史（失败/重跑/中断能解释声称）
 7. 拉代码：合并请求拉到本地项目（GitHub `gh pr diff` / GitLab `glab mr diff` / fetch），与 grill 底座同场，可跑可验
 8. 审查：
-   - 查理解偏差：对照阶段〇 的 agent 视角，找「agent 以为的 vs 实际要的」
+   - 查理解偏差：对照「就绪加载」的 agent 视角，找「agent 以为的 vs 实际要的」
    - 查验收：逐条过验收标准
    - 查声称：跑测试验证
    - 查 close intent：合并请求 title/body 缺紧邻 `Closes MUL-xxxx`？
@@ -105,7 +107,7 @@ argument-hint: "[--profile <name> | --P <name>]"
      - 回「打磨指派」重审 spec（打磨本身可能偏）
      - 或 `multica issue update --assignee-id <new> --profile <name>` 换 agent 重派；旧任务仍在飞先 `multica issue cancel-task <id> --profile <name>`
 9. 罗列质疑，人工确认：
-   - 审查后不自动发回：全部疑问按总则整理成确认清单，每条三段式——标准/声称原文、证据、建议行动（同 comment 模板）
+   - 审查后不自动发回：全部疑问按总则整理成确认清单，每条三段式——标准/声称原文、现状、行动（同 comment 模板）
    - 升级路径同规则：满 2 轮需升级（重审 spec / 换 agent）时一并列出，不自动执行；换 agent 一条列俩——`cancel-task` 先、`update --assignee-id` 后
    完成：用户已确认发回条目（或全部撤回），无一疑问留在会话里未定夺
 
@@ -122,7 +124,9 @@ argument-hint: "[--profile <name> | --P <name>]"
     - **重复触发收敛**：若发现同一内容评论重复触发（runs 列表多个任务 / 多份重复评论），确认多余任务后 `multica issue cancel-task <task-id> --profile <name>` 取消，重复评论标注或删除，不留冗余
     完成：确认条目全部落成 comment 且无 `blocked`（或已升级处理），无一留在会话里
 
-## 人工验收（审查通过后）
+## 人工验收
+
+> 审查通过后进入
 
 11. 停留分支：审查通过后保持合并请求分支，**不自动切回 main**——前端等有界面项目需要人工看页面效果
 12. 干净检查：
