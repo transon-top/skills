@@ -46,8 +46,8 @@
 
 ## 交付要求
 
-- 代码变更需开合并请求；其标题 / 正文 / 分支带本 issue key（如 `MUL-xxxx`）以便回链
-- 期望合并后自动关闭本 issue：title/body 紧邻 `Closes MUL-xxxx`（close 关键字紧邻 key）；缺紧邻则合并后 issue 不会自动 done
+- 代码变更需开合并请求；标题与描述按 `references/merge-request.template.md` 编写（格式固定，关联 Issue 用 `[<identifier> <title>](<url>)`，`Closes <identifier>` 放关联 Issue 节末行），分支带本 issue key（如 `MUL-xxxx`）以便回链
+- 期望合并后自动关闭本 issue：缺紧邻 `Closes <identifier>` 则合并后 issue 不会自动 done；关闭契约细节（关键字全集、邻接规则、时机）见模板与 `multica-working-on-issues`
 - final comment 列变更清单 + 验证结果 + 合并请求 URL；未开合并请求必须说明原因（未变代码 / 被阻塞）
 - 测试 / 验证方式：<期望的验证命令>
 
