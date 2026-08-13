@@ -4,6 +4,7 @@
 > 派单 CLI 要素（title / assignee / status / project / priority / due-date）不进本文件——它们是 `multica issue create` 参数。
 > profile 亦为 CLI 参数：multica-flow 带 `--profile <name>` 时，create/update 统一追加该 flag；无参数时省略。
 > 称谓约定：本文「合并请求」为通用称谓——GitHub 称 PR、GitLab 称 MR，全篇统一用「合并请求」。
+> 本模板产出的 issue 内容不得包含本技能文件路径（references/... 等）——格式约束一律内联展开，禁止以「按模板」简写或路径引用代替。
 
 ## 背景与目标
 
@@ -46,8 +47,11 @@
 
 ## 交付要求
 
-- 代码变更需开合并请求；标题与描述按 `references/merge-request.template.md` 编写（格式固定，关联 Issue 用 `[<identifier> <title>](<url>)`，`Closes <identifier>` 放关联 Issue 节末行），分支带本 issue key（如 `MUL-xxxx`）以便回链
-- 期望合并后自动关闭本 issue：缺紧邻 `Closes <identifier>` 则合并后 issue 不会自动 done；关闭契约细节（关键字全集、邻接规则、时机）见模板与 `multica-working-on-issues`
+- 代码变更需开合并请求：标题格式 `[TYPE] 简短描述`——`TYPE` 九选一（`FEATURE` / `BUGFIX` / `REFACTOR` / `PERF` / `TEST` / `DOCS` / `CHORE` / `BUILD` / `CI`），简短描述为可观察变化的祈使式短句、不携带 issue key；描述按固定章节顺序编写：「关联 Issue / 修改内容 / 技术方案与影响范围 / 验证结果 / 风险与回滚」，章节标题固定不改写
+- 关联 Issue 用 `[<identifier> <title>](<url>)` 格式（可多行），链接指向该 issue 的 web 页面；分支带本 issue key（如 `MUL-xxxx`）以便回链
+- 期望合并后自动关闭本 issue：`Closes <identifier>` 独立成行置于「关联 Issue」节末行，关键字与 key 紧邻、中间不插词；缺此行则合并后 issue 不会自动 done
+- 「验证结果」每条命令标注 `PASSED` / `FAILED` / `NOT RUN`（未运行附原因），不得伪报未运行的检查
+- 「风险与回滚」风险等级 `Low` / `Medium` / `High` 三选一，无已知风险也写明「无」并给等级
 - final comment 列变更清单 + 验证结果 + 合并请求 URL；未开合并请求必须说明原因（未变代码 / 被阻塞）
 - 测试 / 验证方式：<期望的验证命令>
 
