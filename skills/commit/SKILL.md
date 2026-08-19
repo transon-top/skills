@@ -17,7 +17,7 @@ disable-model-invocation: true
 
 ## 流程
 
-### 1. 发现并执行检查（除非 `--no-verify`）
+### 1. 发现检查命令（除非 `--no-verify`）
 
 读取 `package.json` 的 `scripts`，按脚本名语义匹配三类检查命令，每类取首个命中项：
 
@@ -29,16 +29,32 @@ disable-model-invocation: true
 
 名称未命中时，查阅 [`references/check-command-discovery.md`](references/check-command-discovery.md) 执行命令内容分析、配置文件回退及合并命令扫描。
 
-简要列出找到的命令（标注来源），然后直接执行：
+简要列出找到的命令（标注来源）。
 
-- 格式化始终执行写入（`--write`）
+### 2. 计算检查范围
+
+执行 `git diff HEAD --name-only` 取未提交文件列表，本步与步骤 4 复用。
+
+| 检查 | 目标 |
+| ------ | ------ |
+| 类型检查 | 全量——tsc 需项目级类型视图，类型错误常暴露在未改文件，按文件限定会漏报 |
+| 代码质量 | 仅未提交文件 |
+| 格式化 | 仅未提交文件 |
+
+已配置 lint-staged 时（`package.json` 的 `lint-staged` 字段 / `.lintstagedrc*` / `lint-staged.config.*`），直接 `npx lint-staged` 替代代码质量与格式化，跳过范围计算。判定细节见 [`references/check-scoping.md`](references/check-scoping.md)。
+
+### 3. 执行检查
+
+- 格式化始终执行写入（例如`--write`）
 - 类型检查和代码质量使用只读检查
 - 执行顺序：类型检查 → 代码质量 → 格式化
 - 任一步失败即停止，报告错误
 
-### 2. 分析变更
+**完成标准：** 所有检查已执行且通过（或 `--no-verify` 跳过）。
 
-对未提交变更执行 `git diff`：
+### 4. 分析变更
+
+基于步骤 2 的文件列表分析变更：
 
 - 自动识别提交类型，`--type` 强制覆盖
 - 自动提取 scope
@@ -46,7 +62,7 @@ disable-model-invocation: true
 
 **完成标准：** 类型和 scope 已确定，描述 ≤50 字符。
 
-### 3. 生成并提交
+### 5. 生成并提交
 
 按 `--style` 生成提交信息，直接执行 `git commit`，不展示确认。
 
