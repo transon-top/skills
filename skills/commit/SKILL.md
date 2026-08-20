@@ -1,6 +1,6 @@
 ---
 name: commit
-argument-hint: '[--no-verify] [--style=simple|full] [--type=<type>]'
+argument-hint: '[--no-verify] [--style=lite|full] [--type=<type>]'
 description: 创建约定式提交，自动发现检查命令、分析变更、生成并执行提交
 disable-model-invocation: true
 ---
@@ -12,7 +12,7 @@ disable-model-invocation: true
 ## 选项
 
 - `--no-verify`：跳过预提交检查
-- `--style=simple|full`：full（默认）= 正文+页脚；simple = 单行
+- `--style=lite|full`：full（默认）= 正文+页脚；lite = 单行
 - `--type=<type>`：强制指定类型，覆盖自动检测
 
 ## 流程
@@ -81,7 +81,7 @@ disable-model-invocation: true
 - 正文：解释「改了什么」和「为什么」，项目符号列举，每行 ≤72 字符
 - 页脚：`BREAKING CHANGE:` / `Closes: #123` / `Co-authored-by:`
 
-**Simple（`--style=simple`）：**
+**Lite（`--style=lite`）：**
 
 ```text
 <emoji> <type>[scope]: <描述>
@@ -108,7 +108,7 @@ disable-model-invocation: true
 ## 示例
 
 ```bash
-# Simple
+# Lite
 ✨ feat(auth): 添加 JWT 令牌验证
 🐛 fix: 解决事件处理程序内存泄漏
 
