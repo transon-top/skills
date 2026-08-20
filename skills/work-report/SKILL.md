@@ -1,6 +1,6 @@
 ---
 name: work-report
-argument-hint: '[--days N] [--authors name1,name2] [--mode simple|full]'
+argument-hint: '[--days N] [--authors name1,name2] [--mode lite|full] [--output <dir>]'
 description: 从 git 提交历史整理工作汇报（日报/周报/月报），支持按天数、作者、颗粒度筛选。仅手动 `/work-report` 调用。
 disable-model-invocation: true
 ---
@@ -15,7 +15,8 @@ disable-model-invocation: true
 
 - `--days N`：汇总最近 N 天的交付（默认 `7`）
 - `--authors name1,name2`：筛选提交作者，逗号分隔（默认当前 `git config user.name`，经别名表展开）
-- `--mode simple|full`：汇报颗粒度（默认 `simple`）
+- `--mode lite|full`：汇报颗粒度（默认 `lite`）
+- `--output <dir>`：输出文件夹（默认系统临时目录 `$TMPDIR/work-reports`；`$TMPDIR` 未设置时用 `/tmp`）
 
 解析完成后向用户确认日期范围、作者列表、模式，等待确认后再继续。
 
@@ -67,6 +68,10 @@ git log --no-merges --since="<start-date>" --until="<end-date+1>" --format="%h %
 
 ## 3. 分类提交
 
+full 模式走大类映射，lite 模式走语义聚类定领域，分述如下。
+
+### 3.1 full：大类映射
+
 **大类**——从 conventional commit 前缀映射：
 
 | 前缀 | 大类 |
@@ -88,11 +93,21 @@ git log --no-merges --since="<start-date>" --until="<end-date+1>" --format="%h %
 
 **完成标准**：每条 commit 有大类标签；同 ticket 的 commits 在同一节。
 
+### 3.2 lite：语义聚类定领域
+
+- 读全部已归属 commits，按**业务语义**聚类定领域：忽略 scope 字面（不同模型对同领域用词可能不同，`zy-home`/`home`/`homepage` 同组），免疫用词漂移
+- 不建术语表、不落盘：每次运行现聚，聚类结果以确认点校正为准
+- 无 scope / 无 type 的 commit：语义归入最相近领域，判断不出归「其他」
+
+**lite 确认点**（唯一打断，一次过）：聚类后展示领域清单、组标题候选、分组归属、提交量；用户一次补正领域名、改错归、调排序；领域名提炼不出时在此询问。
+
+**完成标准**：每条 commit 恰好归属一个领域；领域清单与归属经用户确认。
+
 ## 4. 生成汇报
 
-根据 `--mode` 加载对应模板，按模板格式生成汇报，写入 `~/.claude/work-reports/<end-date>-<mode>.md`：
+根据 `--mode` 加载对应模板，按模板格式生成汇报，写入 `<output>/<end-date>-<mode>.md`（`--output` 指定，默认 `$TMPDIR/work-reports/`，目录不存在则创建）：
 
-- simple 模式：参考 `templates/SIMPLE.md` — 按大类分组，`功能域: 一句话描述`，从项目视角阐述功能价值
+- lite 模式：参考 `templates/LITE.md` — 章节 = 领域（提交量降序），条目 = 业务点级合并概括（不逐 commit 罗列、不标日期），快速浏览
 - full 模式：参考 `templates/FULL.md` — 按功能域分组，每节含背景和开发明细，叙述完整连贯。背景素材优先级：ticket 主线 → merge 分支名（谁做的）→ commit messages
 
 报告头注明交付日口径。同日同 mode 重复运行覆盖原文件，视为修正重跑。
