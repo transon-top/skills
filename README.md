@@ -1,6 +1,6 @@
 # skills
 
-提供日常开发工作流的自动化能力，目前包含四个技能。
+提供日常开发工作流的自动化能力，目前包含五个技能。
 
 ## 安装
 
@@ -30,3 +30,4 @@ cp -r skills/* .claude/skills/
 | [`/work-report`](skills/work-report/SKILL.md) | 工作汇报：从 git 提交历史生成日报、周报或月报 |
 | [`/arch-reverse-engineering`](skills/arch-reverse-engineering/SKILL.md) | 架构逆向工程：系统性分析代码库，生成功能清单、用户故事地图和简历项目经历 |
 | [`/multica-flow`](skills/multica-flow/SKILL.md) | multica 平台人工总控编排：打磨需求 → 指派 agent 执行 → 审查交付、返工闭环 |
+| [`/frontend-test-setup`](skills/frontend-test-setup/SKILL.md) | 前端测试体系：配置 Vitest / Playwright，确立 code / user behavior 边界，注入 CLAUDE.md 或 AGENTS.md |
