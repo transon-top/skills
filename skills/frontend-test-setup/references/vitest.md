@@ -2,12 +2,15 @@
 
 ## 配置原则
 
-- 优先复用项目现有的 Vite / TypeScript 配置。
+- 优先复用项目现有的 Vite / TypeScript 配置（`mergeConfig` 或 `defineConfig` 内引用）。
 - 项目没有 Vitest 配置时，再创建 `vitest.config.ts`。
 - 修改已有配置前必须先读取。
-- 明确指定测试 environment。
-- 只有在需要 DOM API 时才使用 `jsdom`。
-- 纯逻辑测试尽量不要依赖 browser-like environment。
+- 明确指定测试 environment：只有需要 DOM API 的测试用 `jsdom`（或更快的 `happy-dom`），纯逻辑保持默认 `node`。DOM 环境每个测试文件的初始化开销最大，全局 jsdom 图省事是大忌。
+- 需要多环境时用 `test.projects` 按 include glob 分组（Vitest v4 方案；`environmentMatchGlobs` 已移除）。
+- mock 隔离用 `restoreMocks: true` 或 `mockReset: true`，防测试间泄漏。
+- polyfills / custom matchers 放 `setupFiles` 指定的 setup 文件。
+- `coverage.include` 用项目根相对路径（如 `['src']`），并确认 coverage provider 已安装。
+- vitest 与项目 vite 版本兼容（同装 devDependencies）。
 
 ## 文件命名
 
@@ -65,8 +68,8 @@ observable result
 
 不要为了让 assertion 更容易而 mock 被测试的核心逻辑。
 
-Mock 应尽量局部化，避免产生全局状态污染。
+Mock 应尽量局部化，避免产生全局状态污染；配合 `restoreMocks` / `mockReset` 自动清理。
 
 ## 测试目标
 
-优先编写快速、确定性、大量 case、易定位失败原因的测试。
+单测要 tight：快、deterministic、大量 case、失败原因一眼可定位。

@@ -6,8 +6,36 @@
 - 如果项目已有 Playwright 配置，先读取再修改。
 - 需要自动启动本地应用时使用 `webServer`。
 - 复用项目现有 package manager 和启动命令。
-- 集中管理 `baseURL`。
-- 使用 Playwright fixture 提供隔离的 browser context。
+- 集中管理 `baseURL`，与 `webServer.url` 保持协议 / host / 端口一致。
+- 使用 Playwright fixture 提供隔离的 browser context（每个 test 默认独立 context）。
+- 检查浏览器是否已安装：`npx playwright install --with-deps <browser>`。
+
+## 推荐 config 结构
+
+```ts
+import { defineConfig, devices } from '@playwright/test'
+
+export default defineConfig({
+  testDir: 'tests/e2e',
+  fullyParallel: true,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
+  workers: process.env.CI ? 1 : undefined,
+  reporter: 'html',
+  use: {
+    baseURL: 'http://localhost:3000',
+    trace: 'on-first-retry',
+  },
+  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  webServer: {
+    command: 'npm run dev',
+    url: 'http://localhost:3000',
+    reuseExistingServer: !process.env.CI,
+  },
+})
+```
+
+按需调整：跨浏览器再加 firefox / webkit / channel；并行 shard（`--shard=i/n`）用于 CI 分发。
 
 ## 文件命名
 
@@ -45,6 +73,8 @@ tests/e2e/
 
 尽量避免依赖 DOM 结构的 brittle CSS / XPath selector。
 
+Playwright 的 locator 自带 auto-wait（点击 / 填充前自动等待元素可交互），配合 web-first assertions（`expect(locator).toBeVisible()` 轮询等待），不要手写 `waitForTimeout` / `waitForSelector`。
+
 ## 测试结构
 
 每个 E2E test 应该描述一个明确的用户 / 业务结果。
@@ -58,6 +88,8 @@ Then
 ```
 
 但不要为了形式而过度封装。
+
+测试间保持独立（isolation）：共享 setup（如登录）放 `test.beforeEach`，不在 test 之间传递状态。
 
 ## Fixtures / Helpers
 

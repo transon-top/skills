@@ -1,6 +1,6 @@
 ---
 name: frontend-test-setup
-description: 为前端项目配置 Vitest / Playwright 测试体系：建立 code behavior / user behavior 测试边界、文件组织与依赖脚本，并安全注入 CLAUDE.md 或 AGENTS.md。
+description: 为前端项目配置 Vitest / Playwright 测试体系：建立 code behavior / user behavior 测试边界、文件组织与依赖脚本、诊断配置正确性与合理性，并安全注入 CLAUDE.md 或 AGENTS.md。
 disable-model-invocation: true
 ---
 
@@ -74,13 +74,27 @@ disable-model-invocation: true
 
 示例与正反例 → `references/playwright.md`。
 
-### 6. 生成测试规范
+### 6. 诊断配置
+
+配置完成后立即运行，先确认技术配置正确，再写规范与注入。
+
+命令验证（能执行的就执行）：
+
+- Vitest：`npx vitest run <至少一个真实测试文件>` — config 加载、该文件被收集且通过；全量 run 作参照，已有失败测试属项目状态不属于配置问题，列入报告
+- Playwright：`npx playwright test --list` 列出全部预期测试；浏览器已安装（`npx playwright install --with-deps <browser>`）；环境允许时跑至少 1 个 smoke E2E
+- 共用：scripts 可执行、无意外改动用户文件
+
+合理性检查：对 `references/diagnose-setup.md` 的 checklist 逐项给结论——**通过 / 不适用 / 需修改**；需修改的改完重跑验证。
+
+**完成**：每项有结论；执行过的命令附实际输出；不能执行的项目列入报告并标注未验证——没有实际执行的命令不能声称执行成功。
+
+### 7. 生成测试规范
 
 按所选方案生成，规范至少包含：工具选择与职责边界、文件组织与命名、mocking 原则、E2E 范围、fixture / helper 原则、避免重复测试、新增功能时如何判断。
 
 模板 → `references/agent-instructions.md`。
 
-### 7. 注入 CLAUDE.md / AGENTS.md
+### 8. 注入 CLAUDE.md / AGENTS.md
 
 文件选择：优先检查执行 skill 所在路径下的 `.claude/CLAUDE.md`，存在则注入它；否则按项目根目录 `CLAUDE.md` / `AGENTS.md` 现状：
 
@@ -92,17 +106,10 @@ disable-model-invocation: true
 
 **完成**：marker 只出现一次，用户原有内容未动。
 
-### 8. 处理已有测试框架
+### 9. 处理已有测试框架
 
 Jest / Cypress / Testing Library 等：分析用途与复用、保留现有体系、报告中说明。迁移仅限用户明确要求。
 
-### 9. 最终验证
-
-- Vitest：`vitest run`
-- Playwright：`playwright test --list`，环境允许再跑至少 1 个 smoke E2E
-
-同时核验：config 可加载、scripts 可执行、test discovery 正常、marker 唯一、无意外改动用户文件。没有实际执行的命令不能声称执行成功。
-
 ### 10. 最终报告
 
-方案、创建 / 修改文件、测试目录结构、CLAUDE/AGENTS 修改、实际执行验证及结果、保留的已有基础设施、需用户手动完成的步骤。
+方案、创建 / 修改文件、测试目录结构、CLAUDE/AGENTS 修改、**诊断结论**（执行过的验证及结果、标注未验证项）、保留的已有基础设施、需用户手动完成的步骤。
