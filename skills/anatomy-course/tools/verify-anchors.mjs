@@ -108,8 +108,15 @@ function hit(name) {
 
 let failed = 0;
 let checked = 0;
+let skipped = 0;
 for (const f of mmdFiles) {
   const src = readFileSync(join(diagramDir, f), 'utf8');
+  // 概念豁免:图源含 "%% concept" 注释 = 本图是概念图(语法课/方法论),不要求节点锚代码
+  if (src.includes('%% concept')) {
+    skipped++;
+    console.log(`⏭ ${f}: 概念图豁免(--strict 仍跳过)`);
+    continue;
+  }
   const seen = new Set();
   for (const line of src.split('\n')) {
     if (!line.includes('"') && !line.includes('{')) continue;
@@ -132,4 +139,4 @@ if (failed && strict) {
   console.error(`\n${failed} 个节点未通过锚点校验(--strict)`);
   process.exit(1);
 }
-console.log(`\n${mmdFiles.length} 图,${checked} 节点,${failed} 未命中${strict ? '(strict)' : ''}`);
+console.log(`\n${mmdFiles.length} 图,${checked} 节点,${failed} 未命中,${skipped} 概念图豁免${strict ? '(strict)' : ''}`);
