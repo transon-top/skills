@@ -31,3 +31,4 @@ cp -r skills/* .claude/skills/
 | [`/arch-reverse-engineering`](skills/arch-reverse-engineering/SKILL.md) | 架构逆向工程：系统性分析代码库，生成功能清单、用户故事地图和简历项目经历 |
 | [`/multica-flow`](skills/multica-flow/SKILL.md) | multica 平台人工总控编排：打磨需求 → 指派 agent 执行 → 审查交付、返工闭环 |
 | [`/frontend-test-setup`](skills/frontend-test-setup/SKILL.md) | 前端测试体系：配置 Vitest / Playwright，确立 code / user behavior 边界，注入 CLAUDE.md 或 AGENTS.md |
+| [`/anatomy-course`](skills/anatomy-course/SKILL.md) | 图解课程：从一个仓库生成"宏观思维模型"图解课程，整体图解 → 拆分讲解结构/关系/作用，产出自学 HTML 课程 |

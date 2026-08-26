@@ -16,7 +16,7 @@
 
 ### 测试边界
 
-测试 code behavior 时使用 Vitest：
+测试 code behavior 时使用 Vitest 例如：
 
 - pure functions
 - data transformation
@@ -27,7 +27,7 @@
 - focused component behavior
 - edge cases
 
-测试 user behavior 时使用 Playwright：
+测试 user behavior 时使用 Playwright 例如：
 
 - critical user journeys
 - authentication / authorization
@@ -35,11 +35,11 @@
 - browser interactions
 - core business workflows
 
-如果 UI 发生较大改版后测试仍然应该成立，优先使用 Vitest。
+说明:
 
-如果测试描述的是用户如何完成一个业务目标，优先使用 Playwright。
-
-不要在两个测试层级重复完整的测试矩阵。
+- 如果 UI 发生较大改版后测试仍然应该成立，优先使用 Vitest。
+- 如果测试描述的是用户如何完成一个业务目标，优先使用 Playwright。
+- 不要在两个测试层级重复完整的测试矩阵。
 
 ### 文件组织
 
@@ -85,13 +85,10 @@ Playwright 默认使用：
 
 ### Playwright 规则
 
-优先使用 role、label、visible text 或稳定的 test id。
-
-避免使用与 DOM 实现强绑定的 CSS / XPath selector。
-
-保持 E2E test deterministic 和独立。
-
-不要把核心 business assertion 隐藏在 helper 中。
+- 优先使用 role、label、visible text 或稳定的 test id。
+- 避免使用与 DOM 实现强绑定的 CSS / XPath selector。
+- 保持 E2E test deterministic 和独立。
+- 不要把核心 business assertion 隐藏在 helper 中。
 
 ### 新增功能
 
@@ -136,11 +133,11 @@ Playwright 默认使用：
 *.test.tsx
 ```
 
-如果项目已有其他命名规范，遵循项目现有规范。
+规则:
 
-新增功能时，应针对重要逻辑、state transition、validation 和 edge cases 编写 deterministic tests。
-
-如果需求明确依赖真实浏览器中的完整用户流程，不应把 Vitest 当作 E2E 测试的替代方案。
+- 如果项目已有其他命名规范，遵循项目现有规范。
+- 新增功能时，应针对重要逻辑、state transition、validation 和 edge cases 编写 deterministic tests。
+- 如果需求明确依赖真实浏览器中的完整用户流程，不应把 Vitest 当作 E2E 测试的替代方案。
 
 <!-- FRONTEND_TEST_SETUP_END -->
 ````
@@ -173,16 +170,6 @@ tests/e2e/
 
 并按照 business domain 组织。
 
-优先使用 role、label、visible text 或稳定的 test id。
-
-避免 brittle CSS / XPath selector。
-
-保持测试 deterministic 和独立。
-
-使用 fixture / helper 处理可复用的 setup 和机械性操作，但不要隐藏核心 business assertion。
-
-不要把 Playwright 变成庞大的 Unit Test matrix。
-
 默认使用：
 
 ```text
@@ -190,7 +177,14 @@ tests/e2e/
 *.spec.tsx
 ```
 
-如果项目已有其他命名规范，遵循项目现有规范。
+规则:
+
+- 优先使用 role、label、visible text 或稳定的 test id。
+- 避免 brittle CSS / XPath selector。
+- 保持测试 deterministic 和独立。
+- 使用 fixture / helper 处理可复用的 setup 和机械性操作，但不要隐藏核心 business assertion。
+- 不要把 Playwright 变成庞大的 Unit Test matrix。
+- 如果项目已有其他命名规范，遵循项目现有规范。
 
 <!-- FRONTEND_TEST_SETUP_END -->
 ````
