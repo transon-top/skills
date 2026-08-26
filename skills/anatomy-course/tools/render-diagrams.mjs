@@ -24,7 +24,9 @@ const options = {
 let n = 0;
 for (const f of readdirSync(srcDir).filter((x) => x.endsWith('.mmd')).sort()) {
   const src = readFileSync(`${srcDir}/${f}`, 'utf8');
-  const svg = renderMermaidSVG(src, options);
+  const svg = renderMermaidSVG(src, options)
+    // beautiful-mermaid 默认注入 Google Fonts @import,课程要求自包含/离线可用,剥掉
+    .replace(/@import url\('https:\/\/fonts\.googleapis\.com[^']*'\);\s*/g, '');
   if (!svg.startsWith('<svg')) throw new Error(`render failed: ${f}`);
   const out = f.replace(/\.mmd$/, '.svg');
   writeFileSync(`${outDir}/${out}`, svg);
