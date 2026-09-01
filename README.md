@@ -1,6 +1,6 @@
 # skills
 
-提供日常开发工作流的自动化能力，目前包含五个技能。
+提供日常开发工作流的自动化能力，目前包含七个技能。
 
 ## 安装
 
@@ -32,3 +32,4 @@ cp -r skills/* .claude/skills/
 | [`/multica-flow`](skills/multica-flow/SKILL.md) | multica 平台人工总控编排：打磨需求 → 指派 agent 执行 → 审查交付、返工闭环 |
 | [`/frontend-test-setup`](skills/frontend-test-setup/SKILL.md) | 前端测试体系：配置 Vitest / Playwright，确立 code / user behavior 边界，注入 CLAUDE.md 或 AGENTS.md |
 | [`/anatomy-course`](skills/anatomy-course/SKILL.md) | 图解课程：从一个仓库生成"宏观思维模型"图解课程，整体图解 → 拆分讲解结构/关系/作用，产出自学 HTML 课程 |
+| [`/obsidian-kit`](skills/obsidian-kit/SKILL.md) | Obsidian 捕获：将内容整理为项目无关的经验卡，写入已绑定 vault 的 inbox |
