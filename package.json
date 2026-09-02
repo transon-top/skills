@@ -2,7 +2,7 @@
   "name": "transontop-skills",
   "version": "1.0.4",
   "description": "",
-  "packageManager": "pnpm@11.24.0",
+  "packageManager": "pnpm@11.25.0",
   "scripts": {
     "release": "node scripts/release.js",
     "lint:md": "markdownlint-cli2 \"**/*.md\" \"!node_modules\"",
