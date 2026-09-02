@@ -87,7 +87,7 @@ function runCheck() {
         warnings.push(`vault "${config.vault}" 不在 obsidian vaults 列表中`);
       }
     } catch {
-      warnings.push('obsidian CLI 不可达, 跳过 vault 注册检查');
+      problems.push('obsidian CLI 不可达, 请先安装 obsidian 命令行 (技能前提)');
     }
   }
 

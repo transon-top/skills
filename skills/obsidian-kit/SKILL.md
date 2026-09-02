@@ -9,12 +9,16 @@ disable-model-invocation: true
 
 把内容 (碎片/经验/代码片段/URL) 捕获到已绑定的 Obsidian vault。技能只绑定一个 vault, 所有捕获默认落入它的 inbox。
 
+## 前提
+
+`obsidian` 命令行必须已安装且可达 (`command -v obsidian`)。`config.mjs check` 会校验 CLI 可达性, 不可达时失败停止, 先安装再继续。
+
 ## 配置
 
 `~/.claude/.obsidian-kit.json`, 由本技能自带脚本管理 (路径相对本技能目录):
 
 ```bash
-node scripts/config.mjs check    # 校验: JSON/三字段/root/注册状态; inbox 缺失自动创建
+node scripts/config.mjs check    # 校验: JSON/三字段/root/obsidian CLI 可达/注册状态; inbox 缺失自动创建
 node scripts/config.mjs get      # 输出当前配置 JSON
 node scripts/config.mjs set --vault <名称> [--inbox <目录>] [--root <路径>]  # 绑定/换绑
 ```
@@ -56,10 +60,16 @@ node scripts/config.mjs set --vault <名称> [--inbox <目录>] [--root <路径>
 - 代码抽象为最小可执行 demo
 - 提炼中文短标题作文件名 (技术名保留英文), 日期只进 frontmatter
 
+**tags 规范** (添加/修改 tags 时执行)：
+
+1. 先查目标 vault 的 tags: `obsidian tags` (`vault=` 覆盖时用 `obsidian vault=<名称> tags`)
+2. 语义去重: 候选 tag 与已有 tag 同义 → 复用已有 tag, 不新建
+3. 语义正交: 整组 tags 语义互不重叠, 组合起来能概括该内容
+
 **写入流程：**
 
 1. 查重: 目标 inbox 下已有同名文件 → 以 `## YYYY-MM-DD` 小节追加并更新 `update_at`; 否则新建
-2. 新建文件 frontmatter 按内容分型: 资源类型用资源模板, 经验类型用 `type: note` + `tags` + `description` + `create_at`/`update_at` (ISO 日期); 正文为对应模板布局
+2. tags 按 tags 规范对照后再写入; 新建文件 frontmatter 按内容分型: 资源类型用资源模板, 经验类型用 `type: note` + `tags` + `description` + `create_at`/`update_at` (ISO 日期); 正文为对应模板布局
 3. 通道: 优先 `obsidian vault=<vault> create|append path=<inbox>/<标题>.md content=...`; CLI 失败 (Obsidian 未运行) 且 config 有 `root` 时直接写 `<root>/<inbox>/<标题>.md`; 两者都不可用则报错停止
 
-**完成标准：** 文件已写入, 报告路径与抽象要点 (原文 → 经验卡改写了什么)。
+**完成标准：** 文件已写入 (tags 按规范复核: 无语义重复、整组能概括内容), 报告路径与抽象要点 (原文 → 经验卡改写了什么)。
