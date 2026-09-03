@@ -41,10 +41,23 @@ function readConfig() {
 function resolveRoot(vault) {
   try {
     // info=path 时 CLI 直接输出纯路径
-    return execFileSync('obsidian', [`vault=${vault}`, 'vault', 'info=path'], { encoding: 'utf8' }).trim() || null;
+    const p = execFileSync('obsidian', [`vault=${vault}`, 'vault', 'info=path'], { encoding: 'utf8' }).trim();
+    if (p) return p;
   } catch {
-    return null;
+    // 本 CLI 无 vault 路径查询子命令, 走 obsidian.json
   }
+  // fallback: 从 obsidian.json 读取 (macOS), 以路径 basename == vault 名匹配
+  try {
+    const { vaults = {} } = JSON.parse(
+      readFileSync(path.join(homedir(), 'Library', 'Application Support', 'obsidian', 'obsidian.json'), 'utf8'),
+    );
+    for (const { path: p } of Object.values(vaults)) {
+      if (p && path.basename(p) === vault) return p;
+    }
+  } catch {
+    // obsidian.json 不可读, 返回 null 由调用方提示 --root
+  }
+  return null;
 }
 
 function registeredVaults() {

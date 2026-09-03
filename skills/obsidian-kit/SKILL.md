@@ -24,7 +24,7 @@ node scripts/config.mjs set --vault <名称> [--inbox <目录>] [--root <路径>
 ```
 
 - `vault`: vault 名称, `root`: vault 绝对路径, `inbox`: 捕获目标文件夹 (默认 `10_inbox`)
-- `set` 自动从 obsidian CLI 取 root, 取不到时用 `--root` 手动指定
+- `set` 取 root: 先试 obsidian CLI, 取不到时读 obsidian.json 配置, 均失败须用 `--root` 手动指定 (本 CLI 无 vault 路径查询子命令, 实测需 --root)
 - 文件不存在或 check 失败时先完成绑定, 再继续本次请求
 
 ## 命令
@@ -35,7 +35,7 @@ node scripts/config.mjs set --vault <名称> [--inbox <目录>] [--root <路径>
 
 ### config
 
-1. `obsidian vaults` 列出候选, 让用户选择
+1. `obsidian vaults` 列出候选, 让用户选择 (**必须等待用户确认, 不得自行代选**)
 2. `node scripts/config.mjs set --vault <名称>` 完成绑定, inbox 向用户确认 (非 `10_inbox` 时加 `--inbox`)
 
 **完成标准：** `node scripts/config.mjs check` 退出码 0。
@@ -65,11 +65,12 @@ node scripts/config.mjs set --vault <名称> [--inbox <目录>] [--root <路径>
 1. 先查目标 vault 的 tags: `obsidian tags` (`vault=` 覆盖时用 `obsidian vault=<名称> tags`)
 2. 语义去重: 候选 tag 与已有 tag 同义 → 复用已有 tag, 不新建
 3. 语义正交: 整组 tags 语义互不重叠, 组合起来能概括该内容
+4. 目标 vault 与查询时不一致 (换绑/迁移) 时, 对新 vault 重跑本规范
 
 **写入流程：**
 
 1. 查重: 目标 inbox 下已有同名文件 → 以 `## YYYY-MM-DD` 小节追加并更新 `update_at`; 否则新建
 2. tags 按 tags 规范对照后再写入; 新建文件 frontmatter 按内容分型: 资源类型用资源模板, 经验类型用 `type: note` + `tags` + `description` + `create_at`/`update_at` (ISO 日期); 正文为对应模板布局
-3. 通道: 优先 `obsidian vault=<vault> create|append path=<inbox>/<标题>.md content=...`; CLI 失败 (Obsidian 未运行) 且 config 有 `root` 时直接写 `<root>/<inbox>/<标题>.md`; 两者都不可用则报错停止
+3. 通道: 优先 `obsidian vault=<vault> create|append path=<inbox>/<标题>.md content=...`; CLI 通道不可用 (命令不存在/未注册/参数报错) 时**重试一次**, 仍失败且 config 有 `root` 时直接写 `<root>/<inbox>/<标题>.md`; 两者都不可用则报错停止
 
 **完成标准：** 文件已写入 (tags 按规范复核: 无语义重复、整组能概括内容), 报告路径与抽象要点 (原文 → 经验卡改写了什么)。
