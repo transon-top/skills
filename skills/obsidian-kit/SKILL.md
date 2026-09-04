@@ -24,7 +24,7 @@ node scripts/config.mjs set --vault <名称> [--inbox <目录>] [--root <路径>
 ```
 
 - `vault`: vault 名称, `root`: vault 绝对路径, `inbox`: 捕获目标文件夹 (默认 `10_inbox`)
-- `set` 取 root: 先试 obsidian CLI, 取不到时读 obsidian.json 配置, 均失败须用 `--root` 手动指定 (本 CLI 无 vault 路径查询子命令, 实测需 --root)
+- `set` 取 root: 先试 `obsidian vault=vault info=path`, 失败时 `obsidian vaults verbose` 列表匹配, 均失效才读 obsidian.json, 全败须用 `--root` 手动指定
 - 文件不存在或 check 失败时先完成绑定, 再继续本次请求
 
 ## 命令
@@ -74,7 +74,7 @@ node scripts/config.mjs set --vault <名称> [--inbox <目录>] [--root <路径>
 
 **写入流程：**
 
-1. 查重: 目标 inbox 下已有同名文件 → 以 `## YYYY-MM-DD` 小节追加并更新 `update_at`; 否则新建
+1. 查重: `obsidian vault=<vault> files folder=<inbox>` (只读原语) 列 inbox 文件, 处理标题同名 → 以 `## YYYY-MM-DD` 小节追加并更新 `update_at`; 否则新建
 2. tags 按 tags 规范对照后再写入; 新建文件 frontmatter 按内容分型: 资源类型用资源模板, 经验类型用 `type: note` + `tags` + `description` + `create_at`/`update_at` (ISO 日期); 正文为对应模板布局
 3. 通道: 优先 `obsidian vault=<vault> create|append path=<inbox>/<标题>.md content=...`; CLI 通道不可用 (命令不存在/未注册/参数报错) 时**重试一次**, 仍失败且 config 有 `root` 时直接写 `<root>/<inbox>/<标题>.md`; 两者都不可用则报错停止
 

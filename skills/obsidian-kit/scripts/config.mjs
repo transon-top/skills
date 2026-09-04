@@ -38,15 +38,34 @@ function readConfig() {
   }
 }
 
-function resolveRoot(vault) {
+// 路径必须是存在的目录, 否则视为 CLI 报错文本混入 std 而非有效结果
+function isDir(p) {
   try {
-    // info=path 时 CLI 直接输出纯路径
-    const p = execFileSync('obsidian', [`vault=${vault}`, 'vault', 'info=path'], { encoding: 'utf8' }).trim();
-    if (p) return p;
+    return statSync(p).isDirectory();
   } catch {
-    // 本 CLI 无 vault 路径查询子命令, 走 obsidian.json
+    return false;
   }
-  // fallback: 从 obsidian.json 读取 (macOS), 以路径 basename == vault 名匹配
+}
+
+function resolveRoot(vault) {
+  // 1) 官方 CLI 精确查询
+  try {
+    const p = execFileSync('obsidian', [`vault=${vault}`, 'vault', 'info=path'], { encoding: 'utf8' }).trim();
+    if (p && isDir(p)) return p;
+  } catch {
+    // CLI 查询失败, 走 vaults verbose 列表匹配
+  }
+  // 2) vaults verbose: 官方原语返回 "名称<TAB>路径" 清单
+  try {
+    const out = execFileSync('obsidian', ['vaults', 'verbose'], { encoding: 'utf8' });
+    for (const line of out.split('\n')) {
+      const [name, p] = line.trim().split('\t');
+      if (name === vault && p && isDir(p)) return p;
+    }
+  } catch {
+    // CLI 不可达, 最后兜底 obsidian.json (macOS), basename == vault 名匹配
+  }
+  // 3) 兜底: 官方应用配置 obsidian.json (macOS)
   try {
     const { vaults = {} } = JSON.parse(
       readFileSync(path.join(homedir(), 'Library', 'Application Support', 'obsidian', 'obsidian.json'), 'utf8'),
@@ -55,7 +74,7 @@ function resolveRoot(vault) {
       if (p && path.basename(p) === vault) return p;
     }
   } catch {
-    // obsidian.json 不可读, 返回 null 由调用方提示 --root
+    // 不可读, 返回 null 由调用方提示 --root
   }
   return null;
 }
