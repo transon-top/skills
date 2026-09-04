@@ -1,13 +1,13 @@
 ---
 name: obsidian-kit
-argument-hint: '[add [vault=<名称>] <内容> | config]'
-description: Obsidian 捕获: 将内容整理为项目无关的经验卡或资源卡 (纯 URL), 写入已绑定 vault 的 inbox
+argument-hint: '[add [vault=<名称>] <内容> | search [vault=<名称>] --q <意图> | config]'
+description: Obsidian 捕获与检索: 内容整理为经验卡/资源卡写入已绑定 vault 的 inbox; --q 搜索已有文档 (纯只读, 供参考)
 disable-model-invocation: true
 ---
 
 # /obsidian-kit
 
-把内容 (碎片/经验/代码片段/URL) 捕获到已绑定的 Obsidian vault。技能只绑定一个 vault, 所有捕获默认落入它的 inbox。
+把内容 (碎片/经验/代码片段/URL) 捕获到已绑定的 Obsidian vault, 或把已有文档检索到对话上下文供参考。技能只绑定一个 vault, 捕获默认落入它的 inbox, 检索对该 vault 纯只读。
 
 ## 前提
 
@@ -79,3 +79,31 @@ node scripts/config.mjs set --vault <名称> [--inbox <目录>] [--root <路径>
 3. 通道: 优先 `obsidian vault=<vault> create|append path=<inbox>/<标题>.md content=...`; CLI 通道不可用 (命令不存在/未注册/参数报错) 时**重试一次**, 仍失败且 config 有 `root` 时直接写 `<root>/<inbox>/<标题>.md`; 两者都不可用则报错停止
 
 **完成标准：** 文件已写入 (tags 按规范复核: 无语义重复、整组能概括内容), 报告路径与抽象要点 (原文 → 经验卡改写了什么)。
+
+### search [vault=<名称>] --q `<自然语言>` [--limit <n>] [path=<文件夹>]
+
+把用户用自然语言描述的"想找什么"转换为检索, 把已有文档作为参考放入对话上下文。**此模式对 vault 纯只读: 全链路为零写入。**
+
+**入口判定：** 出现 `--q` 或 `--query` → 只读搜索模式; 搜索与写入互斥, 同时出现 `<内容>` 时报参数错误停止。
+
+**参数翻译：** 技能层 `vault=<名称>` 对应脚本 `--vault <名称>`, 技能层 `path=<文件夹>` 对应脚本 `--path <文件夹>`; 其余 `--limit <n>` 相同。
+
+**只读不变式：**
+
+- 一律经 `node scripts/search.mjs` 调用, 不直接调 `obsidian` 的写命令 (create/append/move/delete 等)
+- search.mjs 白名单子命令: `search`/`search:context`/`read`/`tags`/`tag`/`properties`/`property:read`/`vault`, 白名单外调用被拒绝
+- 配置校验用 `node scripts/search.mjs check` (纯读: 校验 config/root 存在/CLI 可达, 不创建目录); 不用 `config.mjs check` (它会 mkdir inbox, 属写操作)
+
+**检索管线：**
+
+1. 理解自然语言, 拆出 2~5 个候选查询词 (中文/英文/同义词/缩写形态)
+2. 每词检索: `node scripts/search.mjs context "<词>" [--limit 10] [--path <文件夹>]` (默认全 vault; `path=` 限域)
+3. 标签探路: `node scripts/search.mjs tags` 列全库 tag → 语义映射出候选 tag 名 → 每个 `node scripts/search.mjs tag "<tag>"` 拉文件清单
+4. 聚合去重 → 按命中数粗筛 top 20 → 逐个 `node scripts/search.mjs properties "<文件>"` 取 description/tags
+5. 凭 description 语义精排, 最相关在前; 最终清单 ≤10 条 (`--limit <n>` 覆盖)
+6. 呈现: 每条 = 路径 + description + tags + ≤3 命中行; 按 list 展示给用户; 用户要全文时再 `node scripts/search.mjs read "<文件>"`
+7. 无命中: 报告未找到, 并用步骤 3 的 tags 清单列出相近 tag 建议供用户选择
+
+`vault=<名称>` 临时搜索其他库 (同 add 语义, 不修改 config)。
+
+**完成标准：** 输出参考清单 (每条含路径/description/tags/命中行, 无重复条目), 全程零写入 (只读校验通过)。
