@@ -16,7 +16,7 @@
 
 ## 建留档 issue
 
-- `multica issue create --title <一句话> --description-file <spec> --profile <name>`——`todo`、不指派
+- `multica issue create --title <一句话> --description-file <spec> --allow-external-file --profile <name>`——`todo`、不指派（`--description-file` 路径在 cwd 外须 `--allow-external-file`，MUL-4252 契约）
 - spec 按 `templates/task-spec.template.md` 留档场景填：描述开头醒目标注「留档、不派执行」；「交付要求」写已完成、不派执行，含合并请求链接与状态
 - 平台侧内容面向他人：不含本机绝对路径，仓库位置写远端地址加相对目录
 
@@ -25,4 +25,4 @@
 - 描述「关联 Issue」节补 `[<identifier> <title>](<url>)` + 节末独立行 `Closes <identifier>`（合并后 issue 自动 done）
 - 留档 issue 与合并请求双向关联至此闭合
 
-完成：分支已推、合并请求已开、留档 issue 已建（todo 不指派、含合并请求信息）、合并请求描述含关联与 Closes；出口「合并收口」
+完成：分支已推、合并请求已开、留档 issue 已建（todo 不指派、含合并请求信息）、合并请求描述含关联与 Closes；回补后 `multica issue pull-requests <留档issue-id> --profile <name>` 确认链接出现在列表——编辑重扫无契约背书（官方 webhook 契约只覆盖 pull_request 事件），未出现则换 PR 标题/分支带 key 补链或报用户人工处理；出口「合并收口」

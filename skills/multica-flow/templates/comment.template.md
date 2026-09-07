@@ -3,6 +3,7 @@
 > `<>` = 待替换占位符（替换后不留尖括号）
 > 触发类 comment 必须**自包含**——agent 忙时会被折叠进运行中任务（coalesced/deferred），agent 可能只看到这条 comment + issue 历史。
 > agent final comment 由 `multica-working-on-issues` 契约约束（变更清单/验证/PR URL），此处不定义。
+> 触发属性：质疑发回 / 指派触发 = 显式 mention（会触发 run，属预期）；交付评论 / 验收信号 = `[@all](mention://all/all)` 广播化（抑制 assignee 隐式触发，属公告——见 SKILL.md「评论触发警告」）。
 
 ## 质疑发回（验收不过时）
 
@@ -44,4 +45,6 @@
   - <变更 1>
 - 验证结果：<命令 + 结果>
 - 代码仓库外配合动作：<平台配置 / 待办，无则写「无」>
+
+[@all](mention://all/all)
 ```

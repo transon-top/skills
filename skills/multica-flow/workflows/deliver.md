@@ -6,6 +6,7 @@
 
 - final comment：`multica issue comment list <id> --profile <name>`（变更清单/验证结果/合并请求 URL）
 - 合并请求状态：`multica issue pull-requests <id> --profile <name>`。读前加载 `multica-working-on-issues`：state 单枚举 merged/closed/draft/open，`reference_only` 隐藏链接，`checks_conclusion` 看 CI。勿凭分支名或记忆推断
+- close intent 边界（官方契约）：只扫 title/body——分支名不算；body 仅裸 key 无 closing keyword 会链接成 `reference_only`（本期 pull-requests 列表不显示）
 - 声称与直觉不符：`multica issue runs <id> --profile <name>` 对执行历史（失败/重跑/中断能解释声称）
 
 ## 拉代码
@@ -22,6 +23,6 @@
 - 复用本地 `code-review` skill
 - 返工轮次：疑问发回满 2 轮（第 3 次审查）验收仍不过 → 升级，不再原地打转：
   - 回「明确需求」重审 spec（打磨本身可能偏）
-  - 或 `multica issue update --assignee-id <new> --profile <name>` 换 agent 重派；旧任务仍在飞先 `multica issue cancel-task <id> --profile <name>`
+  - 或 `multica issue update --assignee-id <new> --profile <name>` 换 agent 重派；旧任务仍在飞先 `multica issue cancel-task <run-id> --profile <name>`（run-id 取自 `multica issue runs <id> --profile <name>` 的短前缀，歧义时加 `--issue <id>` 限定）
 
 完成：质疑清单成型（或确认无质疑）；有质疑 → 出口「质疑确认」，无质疑 → 出口「人工验收」

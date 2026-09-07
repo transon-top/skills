@@ -11,7 +11,7 @@ argument-hint: "[--profile <name> | --P <name>] [自然语言描述 | issue-id]"
 
 ## 前提
 
-本地已装 multica-ai/multica 官方 `multica-*` skills——平台操作契约在那边，本 skill 只做编排；缺失提示可用 `npx skills add multica-ai/multica` 安装（装进本地 Claude 环境供编排参考；与 `multica skill import` 装入工作区 DB 供 agent 绑定是两层，勿混）。
+平台操作契约在官方 `multica-*` skills（multica-ai/multica）那边，本 skill 只做编排；官方 skills 不随本仓库分发，本地 Claude 环境缺失时提示 `npx skills add multica-ai/multica` 安装（供编排参考；与 `multica skill import` 装入工作区 DB 供 agent 绑定是两层，勿混）。本 skill 对平台行为的描述（mention 触发、close intent、status 副作用、trigger_outcomes 分流、sub-issue 读取）以官方 skills 及其 `references/*-source-map.md` 为准，发现不一致以官方为准回改本 skill。
 另有 `grilling`（打磨追问模式）与 `code-review`（交付审查）全程复用，运行前确认在可用 skill 列表；或功能相似的 skill。
 
 ## 触发入口
@@ -40,6 +40,15 @@ argument-hint: "[--profile <name> | --P <name>] [自然语言描述 | issue-id]"
 - 用户逐条定夺：保留 / 删改 / 撤回；全部撤回 → 直接走「收尾」
 - 只执行确认条目。追问用户主动发起即确认；`blocked` 修正重发属执行细节，不重复确认
 - **单发**：已确认动作每条只执行一次，成功即止。成功以平台侧为准——评论已在 issue 里、issue 已建、状态已变更——不以命令退出码或输出解析为准；报错/解析失败先查平台现状，确未生效才补发一次，生效后绝不重发
+
+## 评论触发警告
+
+平台契约（官方 `multica-mentioning`）：已指派 issue（assignee=agent）上，任何新评论都会**隐式触发 assignee run**——backlog 停车也触发，已有同 issue 挂起任务才折叠；该触发不出现在 `trigger_outcomes`，观测靠 `issue runs`。只有显式 mention（`[@agent](mention://agent/<uuid>)`）才会在 `trigger_outcomes` 报告。
+
+对策：
+
+- 不打算惊动 agent 的评论（验收信号、交付总结、走读提问）→ `[@all](mention://all/all)` 广播化——@all 抑制全部隐式路由，同条评论无显式 mention 则零触发，公告评论一律走此写法
+- 要触发 agent → 用显式 mention；@all 只挡隐式，同条评论里显式 mention 照样触发——别混用
 
 ## 节点
 

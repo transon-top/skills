@@ -16,7 +16,7 @@
    - assignee 不明确时：`multica agent list --profile <name> --output json` 确认
 2. 打开 issue：
    - `multica issue get <id> --profile <name> --output json` 拿全文
-   - 评论两段有界读：`comment list <id> --profile <name> --roots-only --summary --output json` 扫根；命中相关线程才用 `--thread <thread-id> --tail <n>` 展开
+   - 评论两段有界读：`multica issue comment list <id> --profile <name> --roots-only --summary --output json` 扫根（返回数组，根含 reply_count / last_activity_at）；命中相关线程才用 `--thread <thread-id> --tail <n>` 展开（返回数组，根在前、答复按时间序）
    - agent 视角对照：workdir 的 `.agent_context/issue_context.md`（issue ID、触发方式、handoff note、可用 skills）。仅 agent 首次运行后存在；新 issue 尚无则跳过
 
 完成：本地持有 issue 全文、评论流（根扫描 + 已展开的相关线程）、agent 视角对照（已有运行时）；合并请求状态留「交付审查」节点统一取
