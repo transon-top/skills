@@ -1,0 +1,16 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": ["src/main.tsx"],
+  "project": ["src/**/*.{ts,tsx}", "!src/client/**"],
+  "ignore": ["src/client/**", ".stryker-tmp/**", "reports/**"],
+  "ignoreDependencies": ["zod"],
+  "rules": {
+    "files": "warn",
+    "exports": "warn",
+    "types": "warn",
+    "dependencies": "warn",
+    "devDependencies": "warn",
+    "unlisted": "warn",
+    "duplicates": "off"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    // 暂时关闭：@hey-api/openapi-ts@0.99.0 生成的 client 在开启该项时
+    // 编译不过（src/client 下十余处 TS2379 / TS2375）。
+    // 生成目录被应用代码 import，无法用 exclude 绕开。
+    // 回归验证见 tsconfig.probes.json（那里仍显式开启）。
+    "exactOptionalPropertyTypes": false,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+  "include": ["src"]
+}

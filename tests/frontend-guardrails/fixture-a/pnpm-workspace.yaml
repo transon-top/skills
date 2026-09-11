@@ -1,0 +1,7 @@
+# pnpm 10+ 默认拦截依赖的 build script，被拦截时 `pnpm exec` / `pnpm run`
+# 会因 deps-status 检查失败而直接报错退出。
+# unrs-resolver 是 eslint-import-resolver-typescript 的 native 依赖，esbuild 是 vite 的。
+# pnpm 11 的设置名是 allowBuilds（映射形式）；旧名 onlyBuiltDependencies 已不再读取。
+allowBuilds:
+  esbuild: true
+  unrs-resolver: true

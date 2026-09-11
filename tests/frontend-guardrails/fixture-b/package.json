@@ -1,0 +1,30 @@
+{
+  "name": "fixture-b-node-ts",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "deps": "depcruise --output-type err-long src",
+    "check": "pnpm run lint && pnpm run typecheck && pnpm run deps",
+    "knip": "knip",
+    "dup": "jscpd . --reporters console,silent",
+    "check:report": "pnpm run knip --no-exit-code && pnpm run dup --no-exit-code"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "dependency-cruiser": "^18.2.0",
+    "eslint": "^10.10.0",
+    "eslint-import-resolver-typescript": "^4.4.5",
+    "eslint-plugin-boundaries": "^7.2.0",
+    "eslint-plugin-sonarjs": "^4.2.0",
+    "globals": "^17.12.0",
+    "jscpd": "^5.2.0",
+    "knip": "^6.35.1",
+    "typescript": "~5.9.0",
+    "typescript-eslint": "^8.70.0"
+  }
+}
