@@ -262,10 +262,12 @@ export default [
 const asWarn = (config) => ({
   ...config,
   rules: Object.fromEntries(
-    Object.entries(config.rules ?? {}).map(([rule, value]) => [
-      rule,
-      Array.isArray(value) ? ["warn", ...value.slice(1)] : "warn",
-    ])
+    Object.entries(config.rules ?? {}).map(([rule, value]) => {
+      // `off` 必须原样保留：preset 里 `off` 的语义是「这条规则在本 preset 下
+      // 刻意不启用」。统一降级为 `warn` 等于反向开启它明确关掉的规则。
+      if (value === "off" || value === 0) return [rule, "off"];
+      return [rule, Array.isArray(value) ? ["warn", ...value.slice(1)] : "warn"];
+    })
   ),
 });
 
@@ -274,6 +276,8 @@ export default [
   asWarn(reactYouMightNotNeedAnEffect.configs.recommended),
 ];
 ```
+
+**`off` 那一支不能省。** 多数 preset 的写法是"推荐的规则设 `error`，其余显式 `off`"，`off` 条目占了很大一部分。漏掉这一支等于反向开启 preset 判定"不该默认开"的规则，在一个干净仓库上会立刻多出一批与本项目无关的告警。
 
 等某条规则真的抓到 bug，再单独升回 `error`；一个月只产生噪声的规则关掉。
 

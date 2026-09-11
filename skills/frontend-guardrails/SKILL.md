@@ -158,7 +158,9 @@ disable-model-invocation: true
 
 用 managed markers `<!-- FRONTEND_GUARDRAILS_START -->` / `<!-- FRONTEND_GUARDRAILS_END -->` 包裹，重跑只替换 marker 之间内容，不追加新的一份。
 
-**完成**：marker 只出现一次，用户原有内容未动。
+注入文本里**只出现这个项目的事实与写给这个项目的指令**——不含本技能的名字、其他技能的名字、技能文件路径、工具出处。逐句过删除测试，判据见 `references/agent-rules.md` 的「注入内容的边界」。
+
+**完成**：marker 只出现一次，用户原有内容未动；注入文本逐句过了删除测试。
 
 ### 10. 最终报告
 

@@ -60,6 +60,9 @@ pnpm run test:skills
 5. **boundaries 的哨兵规则对未声明的本地目录误报**——生成目录 `@/client` 必须也声明成 element
 6. **`sonarjs/no-implicit-dependencies` 对路径别名全部误报**、`sonarjs/file-header` 纯噪声
 7. **pnpm 10+ 拦截 build script 会让 `pnpm exec` / `pnpm run` 直接失败**，且设置名在 pnpm 11 改为 `allowBuilds`、位置改为 `pnpm-workspace.yaml`
+8. **注入模板把技能分工写进了项目规范**——模板里有一节在交代提交钩子归哪个技能，而两个夹具都没有提交钩子，所以那一节在夹具里是**零项目内容的纯泄漏**，却因为被当成 golden 输出固化下来而一直是绿的。判据已写进 `references/agent-rules.md` 的「注入内容的边界」，并由 `run.sh` 的 `assert_injection_clean` 断言
+
+第 8 条是"没有断言的规则会漂移"的实例：泄漏是被读注入产物的人发现的；夹具当时只断言 marker 出现一次，对内容一无所知。
 
 ## 维护
 

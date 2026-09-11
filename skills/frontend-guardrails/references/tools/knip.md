@@ -77,8 +77,19 @@ knip 自动从 `package.json` 的 `workspaces`、`pnpm-workspace.yaml`、`lerna.
 ## 退出码
 
 - 发现 issue 时**退出码 1**
-- 永远返回 0：`--no-exit-code`
+- 不再因 issue 失败：`--no-exit-code`
 - 放宽到 N 个才失败：`--max-issues <N>`（默认 0）
+
+**`--no-exit-code` 不是"永远返回 0"。** 插件加载 config 文件失败时，knip 会在判断 `--no-exit-code` **之前**直接 `exitCode = 2` 返回（`dist/cli.js` 里 `hasConfigLoadErrors` 那一支）。此时无论传什么参数都是 2，而结果照常打印——报错与报告同时出现。
+
+触发条件不是"配置文件写错了"，而是**配置文件在顶层有副作用**：动态 `import()` 重量级依赖、读环境变量后发请求、`await` 平台代理或数据库连接。knip 用 jiti 加载这类文件，任一环节在当前 Node 环境里不成立就会抛。`ignoreFiles` 拦不住——插件的 `loadConfigForPlugin` 不检查它。
+
+处置原则是**先证明结果仍然有效，再决定要不要修**。报错只发生在插件的 `resolveConfig` 那一步，项目文件的 import 图走另一条路径，通常是完好的。用两条哨兵判断：
+
+1. 只被该 config 引用的文件**不应**出现在 unused files 里
+2. 往该 config 加一行指向不存在模块的 import，knip 应报 `Unresolved imports`
+
+都成立就说明图是完整的：把报错与退出码含义写进项目规范的「已知问题」，而不是静默 `|| true` 掉。有一条不成立则是图真的断了——此时要改的是配置文件（把顶层副作用改懒），不是 knip 的参数。
 
 `ignore` 列表增长是"检查正在失去覆盖"的信号，要定期复查。每个被忽略的路径就是被明确告知不要检查的一部分代码。
 

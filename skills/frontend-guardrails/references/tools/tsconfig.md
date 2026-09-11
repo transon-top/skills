@@ -111,6 +111,8 @@ arr[0]!;                               // 非空断言：最轻量，但正是 n
 
 ### 标准修法
 
+**自有类型**：把 `undefined` 加进类型。
+
 ```ts
 interface Props { size?: number | undefined }
 ```
@@ -118,6 +120,20 @@ interface Props { size?: number | undefined }
 官方报错信息自己就这么建议：*"Consider adding 'undefined' to the type of the target."*
 
 其他手法：`Required<T>`、显式补偿缺省值 `{ ...props, size: props.size ?? 10 }`、局部 `as`。
+
+**第三方类型**：目标类型不在你手上（第三方 API 的入参类型），上面那条路走不通。可用的修法是把"属性存在但值为 `undefined`"改写成"属性不存在"——条件展开：
+
+```ts
+// 报错：size?: number 不接受显式 undefined
+{ size: compact ? 12 : undefined }
+
+// 改成：属性直接缺席
+{ ...(compact ? { size: 12 } : {}) }
+```
+
+这是 eOPT 在**第三方类型调用点**上最常见的形态：一个 `prop: cond ? value : undefined`。调用点集中在配置文件——把第三方类型当入参传出去的地方。
+
+改写前必须确认消费者的读法：读 `?? 默认值` 或 truthiness 判断时，缺省与显式 `undefined` 等价，改写是行为保持的；用 `'prop' in obj` 区分两者时，改写会改行为，得换别的修法。**改完实测一次两种取值下的配置加载**，不要只看类型通过。
 
 ### 一条被推翻的流行说法
 

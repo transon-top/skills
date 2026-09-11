@@ -81,6 +81,37 @@ pkg_field() {
   node -e "const p=require('./$1/package.json');console.log(String($2))" 2>/dev/null
 }
 
+# 注入块必须只含项目内容。
+#
+# 读规范的是「下一个在本项目里写代码的 agent」——它不知道也不关心规范由谁注入。
+# 技能名、其他技能名、技能文件路径、"本技能范围内外"这类边界声明写进去就是注入污染：
+# 读者只能忽略它，而每一次「这跟我无关」都在削弱整份规范的可信度。
+#
+# 按「形态」匹配而不是列已知名字——清单会随技能增删而过期，形态不会。
+assert_injection_clean() {
+  local file="$1"
+  local block
+  block="$(awk '/FRONTEND_GUARDRAILS_START/{f=1} f; /FRONTEND_GUARDRAILS_END/{f=0}' "$file")"
+  if [ -z "$block" ]; then
+    bad "$file 里找不到注入块（marker 缺失？）"
+    return
+  fi
+  # 技能名从目录名取，不在断言里再写一遍。
+  # 脚本开头已 cd 到本目录，所以相对路径从这里算起。
+  local skill_name
+  skill_name="$(basename "$(cd ../../skills/frontend-guardrails && pwd)")"
+  # 反引号包起来的 slash 命令 = 指向另一个技能
+  local leaked
+  leaked="$(printf '%s\n' "$block" \
+    | grep -nE "\`/[a-z][a-z0-9-]+\`|${skill_name}|本技能|SKILL\.md|references/" || true)"
+  if [ -n "$leaked" ]; then
+    bad "$file 注入块含技能自身的内容（应只含项目事实与写给项目的指令）"
+    printf '%s\n' "$leaked" | sed 's/^/      /'
+  else
+    ok "$file 注入块只含项目内容"
+  fi
+}
+
 # ─────────────────────────────────────────────────────────────
 head_ "fixture-a · React + TS + Vitest + OpenAPI spec"
 
@@ -146,6 +177,7 @@ else
   else
     bad "marker 出现次数不为 1"
   fi
+  assert_injection_clean "$A/CLAUDE.md"
 fi
 
 # ─────────────────────────────────────────────────────────────
@@ -164,7 +196,10 @@ else
   has_file "$B/knip.json"
   has_file "$B/.jscpd.json"
   has_file "$B/.dependency-cruiser.js"
+
+  head_ "  规范注入"
   has_file "$B/CLAUDE.md"
+  assert_injection_clean "$B/CLAUDE.md"
 
   head_ "  按项目版本适配，不升降版本"
   if [ "$(pkg_field "$B" "p.devDependencies.eslint.match(/\d+/)[0]")" = "10" ]; then
