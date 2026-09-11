@@ -36,7 +36,7 @@ disable-model-invocation: true
 
 **只读用户勾选的簇对应的文件**，未勾选的不进上下文。
 
-版本差异是独立的参考：ESLint 主版本的写法分歧、TypeScript 的 peer 范围、pnpm 拦截 build script → `references/version-compat.md`。**项目用 pnpm，或依赖里有 `typescript` / `eslint` 时，动手前先读它**——那里几条踩中会静默失效。
+版本事实的唯一权威是 `references/version-compat.md`：ESLint 主版本的写法分歧、TypeScript 的工具失配、pnpm 拦截 build script 都写在那里。**项目用 pnpm，或依赖里有 `typescript` / `eslint` 时，动手前先读它**——那里几条踩中会静默失效。别处提到版本兼容，只写症状并指回它。
 
 ---
 
@@ -45,6 +45,8 @@ disable-model-invocation: true
 ### 1. 检查项目现状
 
 修改任何文件前读取（存在才读）：`package.json`、lockfile、workspace 配置（`pnpm-workspace.yaml` / `workspaces` 字段）、`eslint.config.*` 或 `.eslintrc*`、`tsconfig.json` 及其 `extends` 链、OpenAPI spec 文件（`openapi.{json,yaml,yml}` / `swagger.*`）、既有测试框架与配置、`CLAUDE.md`、`AGENTS.md`。
+
+包管理器按此顺序判定：`package.json` 的 `packageManager` 字段 → lockfile（`pnpm-lock.yaml` / `package-lock.json` / `yarn.lock` / `bun.lockb`）→ workspace 配置。**信号互相矛盾时问用户，不猜。** 后续所有命令与 script 都按判定的结果写。
 
 **完成**：每项有结论——包管理器、是否 monorepo、**ESLint 主版本**及其配置形态（flat / legacy）、**TypeScript 版本**、有无 spec、是否 React、有无测试框架、规范文件现状。
 
@@ -84,7 +86,7 @@ disable-model-invocation: true
 细节 → `references/lint.md`、`references/tools/eslint-plugins.md`、`references/tools/boundaries.md`。
 
 - **先探测项目 ESLint 主版本**，按版本选写法（见 `version-compat.md`），版本由项目定
-- 无 ESLint 时才装（`eslint` + `typescript-eslint` + `@eslint/js`），版本在报告中说明并交用户确认
+- 无 ESLint 时才装（`eslint` + `typescript-eslint` + `@eslint/js`），装最新版，并在报告中写明选了哪个、为什么，交用户确认
 - 已有配置：**在其上追加插件，不重写**。legacy `.eslintrc*` 迁移仅在用户明确要求时做
 - 所有新启用的规则级别设 `warn`（理由见「基线策略」）
 - 边界规则：先问用户项目的层是什么（目录名 + 允许方向），代人臆造的层不成立。报错文案必须同时说明"为什么有这条规则"和"应该放到哪里"
@@ -108,7 +110,7 @@ disable-model-invocation: true
 
 细节 → `references/agent-rules.md`、`references/tools/react-doctor.md`。
 
-- `react-doctor`：仅 React 项目。它给出的综合分数**只当诊断，不当目标**
+- `react-doctor`：仅 React 项目。它给出的综合分数**只当诊断，不当目标**。项目已装就用项目版本（`pnpm exec`），未装才 `pnpm dlx react-doctor@latest` 并在报告里写明实际跑的版本
 - 规范注入在步骤 9 执行，本步只确定规范内容
 
 **完成**：列出 `react-doctor` 会写的每一处路径（它顺带写一个流水线配置文件），标明哪些已写、哪些待用户确认。
@@ -120,6 +122,8 @@ disable-model-invocation: true
 - 逐工具独立 script（`lint`、`typecheck`、`knip`、`jscpd` …），便于单点排查
 - 一条聚合 `check` 串起全部已装检查
 
+script 名与内容都按步骤 1 判定的包管理器写（`pnpm run lint` / `npm run lint`），script 体里调二进制写裸名（`eslint .`，不写 `pnpm exec`）——前者跨 script 串联必须有前缀，后者交给包管理器解析。
+
 `check` 的退出码行为按用户勾选的严格度决定：只报告的检查（如 `jscpd`、`knip` 首次接入）不进 `check` 的失败路径，或放在 `check:report` 里。
 
 **完成**：`check` 与每个逐工具 script 都实际跑过一次；已有 script 与原来逐字一致。
@@ -130,8 +134,8 @@ disable-model-invocation: true
 
 验证目标是"证明配置正确"，不是清理存量告警：
 
-- 单文件 smoke 为主：挑一个既有源文件跑 `npx eslint <file>`，确认工具能加载、配置能解析、规则真在生效
-- `npx tsc --noEmit` 确认 tsconfig 选项生效
+- 单文件 smoke 为主：挑一个既有源文件跑 `pnpm exec eslint <file>`，确认工具能加载、配置能解析、规则真在生效
+- `pnpm exec tsc --noEmit` 确认 tsconfig 选项生效
 - 全量跑只报告**告警计数**，不逐条列、不要求修
 - 无法执行的项目（无网络、无 spec、缺凭据）列入报告并标注未验证
 
@@ -144,7 +148,7 @@ disable-model-invocation: true
 | 工具 | 静默条件 | 表现 |
 | ---- | -------- | ---- |
 | `eslint-plugin-boundaries` | 缺 `import/resolver`、或 `pattern` 匹配不到 | 规则一条不报 |
-| `dependency-cruiser` | TS 版本超出 peer 范围 | `0 modules cruised` |
+| `dependency-cruiser` | 见 `version-compat.md` 的 TypeScript 表 | `0 modules cruised` |
 | `jscpd` | 路径/格式没匹配上 | `Warning: jscpd analyzed no files`，仍 exit 0 |
 | 任意 ESLint 插件 | `files` 没匹配上 | 输出为空 |
 

@@ -4,7 +4,7 @@
 
 **项目的 ESLint 版本决定写法，不由本技能决定。** 生态里大量插件仍以 ESLint 9 为适配基线，强推版本会连带撞上一堆 peer 冲突。
 
-探测：`package.json` 的 `eslint` 字段、lockfile、`npx eslint --version`。
+探测：`package.json` 的 `eslint` 字段、lockfile、`pnpm exec eslint --version`。
 
 ### 基线写法：纯数组
 
@@ -26,9 +26,9 @@ export default [
 | `eslint/config` 的 `defineConfig` | 9.22.0+ 才有 | 有 |
 | `includeIgnoreFile` | **任何 9.x 都没有**，用 `@eslint/compat` | 10.4.0+ 才有 |
 | `ESLINT_USE_FLAT_CONFIG=false` | 有效，legacy config 可跑（带弃用警告） | **完全失效**，legacy 已移除 |
-| `@eslint/js` 配对 | `9.x` 无 peer，宽松 | `10.x` 硬要求 `eslint@^10`，装错**安装期** ERESOLVE |
+| `@eslint/js` 配对 | `9.x` 无 peer，宽松 | `10.x` 硬要求 `eslint@^10`，装错主版本时**安装期**就报错 |
 | `.ts` 配置文件 | 9.18.0+ 默认启用（9.12–9.17 需 `--flag unstable_ts_config`） | 默认可用 |
-| `eslint-plugin-jsx-a11y` 安装 | **干净**，无需额外参数 | 需 `--legacy-peer-deps` |
+| `eslint-plugin-jsx-a11y` 安装 | **干净**，无需额外参数 | peer 上限停在 `^9`，pnpm 只警告；npm 需放宽 |
 
 **插件的 preset 名在 9 与 10 下逐字节相同**，没有任何一个包在 v9 下需要走不同 preset。
 
@@ -43,7 +43,7 @@ ESLint 9 起 flat config 是默认。项目里有 `.eslintrc.*` 但没有 `eslin
 ## 安装
 
 ```bash
-npm install --save-dev \
+pnpm add -D \
   @eslint/js globals \
   typescript-eslint \
   eslint-plugin-sonarjs \
@@ -58,19 +58,15 @@ npm install --save-dev \
 
 **`eslint` 本身只在该项目还没有时才装**，且 `@eslint/js` 的主版本必须与项目 ESLint 主版本一致（`@eslint/js@9.x` ↔ `eslint@9`，`10.x` ↔ `eslint@10`）。
 
-**这条必须显式 pin，不能靠包管理器默认。** 实测：项目用 `eslint@9.39`，直接 `pnpm add -D @eslint/js` 会装成 **10.0.1**——pnpm 只在末尾打一行 `[WARN] Issues with peer dependencies found`，不报错（npm 会直接 ERESOLVE 失败）。这种"装上了但配错"的状态没有任何即时反馈。装完必须核对主版本。
+**这条必须显式 pin，不能靠包管理器默认。** 实测：项目用 `eslint@9.39`，直接 `pnpm add -D @eslint/js` 会装成**最新主版本**，与项目的 eslint 主版本不一致——pnpm 只在末尾打一行 `[WARN] Issues with peer dependencies found`，不报错（npm 会直接 ERESOLVE 失败）。这种"装上了但配错"的状态没有任何即时反馈。装完必须核对主版本。
 
-**`eslint-plugin-jsx-a11y` 单独处理**：
+**`eslint-plugin-jsx-a11y` 单独处理**：它的 peer 上限停在 `^9`，而包本身已久未发版，**运行时正常**（实测 `jsx-a11y/alt-text`、`jsx-a11y/click-events-have-key-events` 等正常报出）。
 
 ```bash
-# ESLint 9：正常安装
-npm install --save-dev eslint-plugin-jsx-a11y
-
-# ESLint 10：peer 上限停在 ^9，需要放宽
-npm install --save-dev --legacy-peer-deps eslint-plugin-jsx-a11y
+pnpm add -D eslint-plugin-jsx-a11y
 ```
 
-该包最后一次发版是 2024-10-26，peer 范围没跟上，**运行时正常**（实测 `jsx-a11y/alt-text`、`jsx-a11y/click-events-have-key-events` 等正常报出）。不想用 `--legacy-peer-deps`（会全局放宽 peer 校验）可以在 `package.json` 里加 `overrides`。
+pnpm 的 `strictPeerDependencies` 默认关闭，peer 越界只警告不失败，所以这条命令在 ESLint 9 与 10 下都直接可用。npm 项目需要 `--legacy-peer-deps` 放宽校验，或在 `package.json` 里加 `overrides`。
 
 ---
 
@@ -191,7 +187,7 @@ export default [
 
 `tseslint.configs.base` / `eslintRecommended` / `disableTypeChecked` 才是单个对象。
 
-**peer 范围**（8.70.0）：`eslint ^8.57.0 || ^9.0.0 || ^10.0.0`，`typescript >=4.8.4 <6.1.0`。**TS 6.1+ 与 TS 7 不在支持范围内**——项目装 TS 7 时 typescript-eslint 也要一并确认。
+**peer 范围**：它在 `peerDependencies` 里声明了 `eslint` 与 `typescript` 的范围，**TS 有上限**。项目 TS 主版本偏新时先核对：`pnpm view typescript-eslint peerDependencies`。完整症状与处置 → `../version-compat.md`。
 
 ### 四条 TypeScript 规则
 
@@ -338,16 +334,18 @@ export default [
 ## 验证
 
 ```bash
-npx eslint <一个既有源文件>
+pnpm exec eslint <一个既有源文件>
 ```
 
 **必须看到工具真的在跑、规则真的在报。** 四个假绿点：
 
 - 输出为空且没有跳过提示 → 可能 `files` 没匹配上
 - 只跑单文件，不跑全量（全量只报告计数）
-- 确认 `npx eslint --version` 与项目 `package.json` 一致
-- `npx eslint --print-config <file>` 确认某文件实际生效的配置，排查 `files` 不匹配最有用
+- 确认 `pnpm exec eslint --version` 与项目 `package.json` 一致
+- `pnpm exec eslint --print-config <file>` 确认某文件实际生效的配置，排查 `files` 不匹配最有用
 
 ## 出处
 
-要点 3 的推荐规则集。版本差异、peer 范围、preset 名取自实跑验证（2026-09，ESLint 9.39.5 与 10.10.0 双版本对照）。
+要点 3 的推荐规则集。preset 名与版本无关。
+
+实测自 `eslint@9.39.5` 与 `eslint@10.10.0` 双版本对照、`typescript-eslint@8.70.0`、`eslint-plugin-jsx-a11y@6.10.2`（2026-09，夹具实跑）。

@@ -48,7 +48,7 @@ AI 写前端最典型的错误是**不存在的字段**——代码里写 `user.
 - 类型是否从 spec 生成？若是手写，它和 spec 的一致性靠什么保证？
 - 生成目录是否被 lint / format 排除？（生成物不该被项目规则反复改写）
 - 响应在运行期是否校验过？
-- strict 三开关是否真的生效？（跑 `npx tsc --noEmit --showConfig` 确认，不要只看 `tsconfig.json` 里写了什么）
+- strict 三开关是否真的生效？（跑 `pnpm exec tsc --noEmit --showConfig` 确认，不要只看 `tsconfig.json` 里写了什么）
 
 ## 出处
 

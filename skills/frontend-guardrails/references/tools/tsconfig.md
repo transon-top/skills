@@ -147,7 +147,7 @@ interface Props { size?: number | undefined }
 
 ### 与 OpenAPI 代码生成冲突（实测）
 
-**`@hey-api/openapi-ts@0.99.0` 生成的 client 在开启 `exactOptionalPropertyTypes` 时编译不过**——实测 `src/client/` 下十余处 TS2379 / TS2375，全是"optional 属性被赋 `| undefined`"这一类。
+**`@hey-api/openapi-ts` 生成的 client 在开启 `exactOptionalPropertyTypes` 时编译不过**——实测 `src/client/` 下十余处 TS2379 / TS2375，全是"optional 属性被赋 `| undefined`"这一类。
 
 **生成目录被应用代码 import，所以 `exclude` 无效**（TS 会沿 import 图把它拉回来）。
 
@@ -180,13 +180,15 @@ interface Props { size?: number | undefined }
 ## 验证
 
 ```bash
-npx tsc --noEmit --showConfig
+pnpm exec tsc --noEmit --showConfig
 ```
 
 **不要只看 `tsconfig.json` 里写了什么**——`extends` 链、被覆盖的值、`files`/`include` 的实际范围都会影响结果。`--showConfig` 打印的是最终生效配置。
 
-再跑一次 `npx tsc --noEmit` 看实际报错规模。既有项目上首次开启必然大量报错，这只报告计数，不在本步骤清理。
+再跑一次 `pnpm exec tsc --noEmit` 看实际报错规模。既有项目上首次开启必然大量报错，这只报告计数，不在本步骤清理。
 
 ## 出处
 
-要点 2 的推荐选项。语义与类型变化矩阵来自官方 tsconfig reference、release notes 与本机实测（2026-09）。
+要点 2 的推荐选项。语义取自官方 tsconfig reference 与 release notes。
+
+实测自 `typescript@5.9`、`@hey-api/openapi-ts@0.99.0`（2026-09，夹具实跑，TS2379 / TS2375 分类统计）。

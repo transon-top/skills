@@ -2,7 +2,7 @@
 
 对应要点 1。从 OpenAPI spec 生成类型、client 与 Zod schema，消灭"猜字段"。
 
-**当前版本 0.99.0 —— 仍是 0.x，没有 1.0，API 面可能在小版本变动。**
+**升级前读 changelog。** API 面会在小版本里变，而生成物被应用代码 import，一次生成就能带进成片的类型错误。
 
 ## 前置条件
 
@@ -11,8 +11,8 @@
 ## 安装
 
 ```bash
-npm i -D @hey-api/openapi-ts
-npm i zod          # 只有加了 zod 插件才需要
+pnpm add -D @hey-api/openapi-ts
+pnpm add zod          # 只有加了 zod 插件才需要
 ```
 
 **`typescript` 是硬性 peer**（`>=5.5.3`），不装直接跑 CLI 会崩（`Cannot read properties of undefined (reading 'AnyKeyword')`）。
@@ -85,7 +85,7 @@ src/client/
 { "scripts": { "openapi-ts": "openapi-ts" } }
 ```
 
-watch 模式：`npx openapi-ts -w`，或配置里 `input: { path: "./openapi.json", watch: true }`。
+watch 模式：`pnpm exec openapi-ts -w`，或配置里 `input: { path: "./openapi.json", watch: true }`。
 
 ## Zod 用法
 
@@ -116,7 +116,7 @@ plugins: [{ name: "zod", compatibilityVersion: 3 }]   // 产出 import { z } fro
 plugins: [{ name: "zod", compatibilityVersion: "mini" }]
 ```
 
-当前 `zod` 主版本是 **4**（4.6.2）。v4 相对 v3 的破坏性变更（issue 类型体系整体重命名、`z.record()` 不再接受单参数、`z.string().url()` → `z.url()`、对象 + `coerce` 的行为变化）只在与既有 Zod 代码共用时才会撞上——生成物本身是新写的，不受影响。
+v4 相对 v3 的破坏性变更（issue 类型体系整体重命名、`z.record()` 不再接受单参数、`z.string().url()` → `z.url()`、对象 + `coerce` 的行为变化）只在与既有 Zod 代码共用时才会撞上——生成物本身是新写的，不受影响。
 
 ## 两个实测坑
 
@@ -144,7 +144,7 @@ knip 的盲区：忽略生成目录后，生成物用到的运行时依赖（如
 ## 验证
 
 ```bash
-npx openapi-ts
+pnpm exec openapi-ts
 ```
 
 确认：产物目录结构符合预期（有 `types.gen.ts`，加了 zod 就有 `zod.gen.ts`）、`index.ts` barrel 导出正常、TypeScript 能编译生成物。
@@ -156,3 +156,4 @@ npx openapi-ts
 ## 出处
 
 要点 1 的推荐工具。配置细节取自 0.99.0 发布包源码与实跑验证（2026-09）。
+实测自 `@hey-api/openapi-ts@0.99.0`（2026-09，配置细节与生成产物结构）。

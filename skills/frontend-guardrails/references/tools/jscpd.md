@@ -2,12 +2,12 @@
 
 复制粘贴检测。文章用它找"AI 又写了一份实现而不是复用已有的"。
 
-当前版本 **5.2.0**（v5 是 Rust 重写，自包含二进制，不依赖 Node 运行时）。v5 对 v4 是 drop-in CLI replacement，`npx jscpd .` 用法不变。
+v5 是 Rust 重写，自包含二进制，不依赖 Node 运行时；对 v4 是 drop-in CLI replacement，命令用法不变。
 
 ## 安装
 
 ```bash
-npm i -D jscpd
+pnpm add -D jscpd
 ```
 
 包名 `jscpd`，装出 `jscpd` 命令；另有 `cpd` 包装出同名短命令，**同一个二进制**。
@@ -76,10 +76,10 @@ npm i -D jscpd
 
 ```bash
 # logic：严格
-npx jscpd . --format javascript,typescript --threshold 3 --ignore "**/*.test.ts"
+pnpm exec jscpd . --format javascript,typescript --threshold 3 --ignore "**/*.test.ts"
 
 # markup：宽松
-npx jscpd . --format markdown,html,css --threshold 15
+pnpm exec jscpd . --format markdown,html,css --threshold 15
 ```
 
 > 这个"跑两次"的方案由本技能构造，不是 jscpd 官方文档的写法。官方文档里出现的 "per-format" 只指统计，与阈值无关。
@@ -99,35 +99,12 @@ npx jscpd . --format markdown,html,css --threshold 15
 
 这条对"检查显示绿灯其实没跑"的场景很关键——本技能的验证步骤要确认扫描到的文件数非 0。
 
-## PR 门禁：只卡新增重复
-
-存量重复不该阻塞新 PR，用基线：
-
-```bash
-# 1) 生成/刷新基线（提交进仓库）
-npx jscpd --baseline .jscpd-baseline.json --update-baseline .
-
-# 2) 卡新增克隆
-npx jscpd --baseline .jscpd-baseline.json --fail-on-new-clones .
-
-# 3) 无状态变体（PR 场景，需要 fetch-depth: 0）
-npx jscpd --baseline-from-ref origin/main --fail-on-new-clones .
-```
-
-## GitHub Action
-
-```yaml
-- uses: kucherenko/jscpd@v5
-  with:
-    threshold: 5
-```
-
-`v5` 浮动 tag 存在。Action 内部默认会把 SARIF 上传到 GitHub Code Scanning，并用 `if: always()` 保证阈值失败后仍上传报告。inputs 覆盖了上面全部配置项（kebab-case 形式，如 `min-tokens`、`ignore-pattern`、`fail-on-new-clones`）。
+基线门禁（`baseline`、`failOnNewClones`、`baselineFromRef`）与 CI 接线在工具里有，但**把检查变成不可跳过的门禁不在本技能范围内**——先用 `warn` 级报告跑一段时间，确认无误报再谈。
 
 ## 验证
 
 ```bash
-npx jscpd . --reporters console,silent
+pnpm exec jscpd . --reporters console,silent
 ```
 
 确认：报告里**分析的文件数非 0**（这是最容易假绿的地方）、克隆计数是真实数字、配置已生效（改一个 `minTokens` 看计数是否变化）。
@@ -138,4 +115,6 @@ npx jscpd . --reporters console,silent
 
 ## 出处
 
-要点 9 的推荐工具。配置键、默认值、退出码取自官方仓库 `docs/rust.md` 与二进制 `--help` 实测。
+要点 9 的推荐工具。配置键、默认值、退出码取自官方仓库 `docs/rust.md`。
+
+实测自 `jscpd@5.2.0`（2026-09，二进制 `--help` 与夹具实跑）。

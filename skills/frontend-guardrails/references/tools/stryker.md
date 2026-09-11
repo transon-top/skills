@@ -2,13 +2,13 @@
 
 测你的测试：代码被改坏了，测试会不会发现。
 
-当前版本 **10.0.0**。配 Vitest 需要 `@stryker-mutator/vitest-runner`（同为 10.0.0，peerDeps 要求 `vitest >=2.0.0`）。
+配 Vitest 需要 `@stryker-mutator/vitest-runner`（peerDeps 要求 `vitest >=2.0.0`）。
 
 ## 安装与初始化
 
 ```bash
-npm i -D @stryker-mutator/core @stryker-mutator/vitest-runner
-npx stryker init
+pnpm add -D @stryker-mutator/core @stryker-mutator/vitest-runner
+pnpm exec stryker init
 ```
 
 `stryker init` 全交互式，会问 "What file type do you want for your config file?"：
@@ -96,7 +96,7 @@ Did you forget to install it?
 
 ```bash
 CHANGED=$(git diff --name-only --diff-filter=ACMR HEAD~1 -- 'src/**/*.ts' 'src/**/*.tsx' | tr '\n' ',')
-npx stryker run --mutate "$CHANGED" --incremental --incrementalFile reports/stryker-incremental.json
+pnpm exec stryker run --mutate "$CHANGED" --incremental --incrementalFile reports/stryker-incremental.json
 ```
 
 `--incremental` 配合持久化的 `incrementalFile` 才有意义——文件被清掉就等于每次全量。
@@ -140,14 +140,14 @@ reports/
 ## 常用命令
 
 ```bash
-npx stryker run            # 全量
-npx stryker run --dryRunOnly   # 只跑初始测试，验证配置
+pnpm exec stryker run            # 全量
+pnpm exec stryker run --dryRunOnly   # 只跑初始测试，验证配置
 ```
 
 ## 验证
 
 ```bash
-npx stryker run --dryRunOnly
+pnpm exec stryker run --dryRunOnly
 ```
 
 确认：配置被解析（`testRunner: "vitest"` 生效、不是回落到 `command`）、测试能跑通、没有报"找不到 mutation 文件"。
@@ -161,3 +161,5 @@ npx stryker run --dryRunOnly
 ## 出处
 
 要点 7 的推荐工具。配置键、默认值、阈值语义取自官方 schema 与源码实跑。
+
+实测自 `@stryker-mutator/core@10.0.0`（2026-09）。

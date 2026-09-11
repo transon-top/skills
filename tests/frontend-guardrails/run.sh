@@ -235,5 +235,51 @@ else
 fi
 
 # ─────────────────────────────────────────────────────────────
+# 技能文档的不变式。
+#
+# 这三条规则本身也是「没有断言的规则会漂移」的实例：版本信息会随上游过期，
+# 命令形态会随包管理器漂移，而出处不带日期就没人知道那句话实测于什么时候。
+# 断言用「形态」匹配而不是列清单——清单会随技能增删过期，形态不会。
+head_ "技能文档不变式"
+
+SDIR=../../skills/frontend-guardrails
+
+# 1) 命令一律写成 pnpm 形态。匹配行首命令位，正文里对照别的包管理器行为的散文不算。
+pm_leak="$(grep -rnE '^[[:space:]]*(npm|npx|yarn|bun)[[:space:]]' --include='*.md' "$SDIR" || true)"
+if [ -n "$pm_leak" ]; then
+  bad "文档里仍有非 pnpm 的命令（行首命令位）"
+  printf '%s\n' "$pm_leak" | sed 's/^/      /'
+else
+  ok "文档命令一律 pnpm 形态"
+fi
+
+# 2) 三段版本号（pkg@x.y.z）只允许两处：出处小节，或与 --save-exact 同行的刻意 pin。
+#    主版本号（pkg@6）是分支标识，读者拿它做判断，不在此列。
+ver_leak=""
+for f in "$SDIR"/SKILL.md "$SDIR"/references/*.md "$SDIR"/references/tools/*.md; do
+  hit="$(awk '/^## 出处/{f=1} !f' "$f" \
+    | grep -nE '[A-Za-z@/._-]+@[0-9]+\.[0-9]+\.[0-9]+' \
+    | grep -v -- '--save-exact' || true)"
+  [ -n "$hit" ] && ver_leak="${ver_leak}${f}:
+${hit}
+"
+done
+if [ -n "$ver_leak" ]; then
+  bad "正文出现三段版本号（应移入「出处」）"
+  printf '%s\n' "$ver_leak" | sed 's/^/      /'
+else
+  ok "正文无三段版本号"
+fi
+
+# 3) 每个工具文档的出处必须带实测日期。
+for f in "$SDIR"/references/tools/*.md; do
+  if awk '/^## 出处/{f=1} f' "$f" | grep -qE '（20[0-9]{2}-[0-9]{2}'; then
+    ok "$(basename "$f") 出处带日期"
+  else
+    bad "$(basename "$f") 出处缺实测日期"
+  fi
+done
+
+# ─────────────────────────────────────────────────────────────
 printf '\n\033[1m结果：%d 通过，%d 失败\033[0m\n' "$PASS" "$FAIL"
 [ "$FAIL" -eq 0 ]

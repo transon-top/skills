@@ -2,21 +2,23 @@
 
 对应要点 6。把规则摆到模型生成时面前——可作项目扫描，也可**装成 agent skill** 让它在写代码时就能看到问题。
 
-**仅 React 项目。** 当前版本 0.9.13。自述："Your agent writes bad React. This catches it"。
+**仅 React 项目。** 自述："Your agent writes bad React. This catches it"。
 
 ## 版本兼容
 
-`react-doctor@0.9.13` 依赖 `typescript >=5.0.4 <6`。**装 TS 6 或 7 的项目要先确认是否冲突**，不要在报告里跳过这一条。
+它把 `typescript` 当**普通依赖**自带一份，不是 peer——项目的 TS 主版本不构成安装期冲突。版本事实的权威在 `../version-compat.md`。
 
 ## 命令
 
+项目没装时用 `pnpm dlx` 跑一次。`install` 会往 `package.json` 加 devDependency，之后改用 `pnpm exec react-doctor`，跑的是项目锁定的那一份。
+
 ```bash
-npx react-doctor@latest                          # 扫描当前目录
-npx react-doctor@latest --verbose --scope changed # 只报新增问题（官方推荐的一线命令）
-npx react-doctor@latest --scope files src/A.tsx   # 只扫指定文件
-npx react-doctor@latest rules list                # 列出规则
-npx react-doctor@latest why <file:line>           # 解释某条规则为什么报在这里
-npx react-doctor@latest install                   # 装成 agent skill
+pnpm dlx react-doctor@latest                          # 扫描当前目录
+pnpm dlx react-doctor@latest --verbose --scope changed # 只报新增问题（官方推荐的一线命令）
+pnpm dlx react-doctor@latest --scope files src/A.tsx   # 只扫指定文件
+pnpm dlx react-doctor@latest rules list                # 列出规则
+pnpm dlx react-doctor@latest why <file:line>           # 解释某条规则为什么报在这里
+pnpm dlx react-doctor@latest install                   # 装成 agent skill
 ```
 
 顶层命令：`design`、`scan`、`why`、`install|setup`、`ci`、`version`、`rules`。
@@ -117,7 +119,7 @@ export default defineConfig({
 ## 验证
 
 ```bash
-npx react-doctor@latest --scope full . --verbose
+pnpm dlx react-doctor@latest --scope full . --verbose
 ```
 
 确认扫描到的文件数非 0、有实际输出、版本兼容没有报错。
@@ -130,4 +132,6 @@ npx react-doctor@latest --scope full . --verbose
 
 ## 出处
 
-要点 6 的推荐工具。命令与写入路径取自发布包源码与实跑验证（2026-09）。
+要点 6 的推荐工具。命令与写入路径取自发布包源码。
+
+实测自 `react-doctor@0.9.13`（2026-09，夹具 `--scope full` 实跑）。

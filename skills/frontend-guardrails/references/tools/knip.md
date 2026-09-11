@@ -2,18 +2,18 @@
 
 找死代码：没人 import 的文件、没人用的 export、不再需要的依赖。
 
-当前版本 **6.35.1**。包名 `knip`。
+包名 `knip`。
 
 ## 安装与初始化
 
 ```bash
-npm i -D knip
-npm init @knip/config
+pnpm add -D knip
+pnpm create @knip/config
 ```
 
-**注意：没有 `npx knip --init` 这个命令。** 初始化走独立脚手架包 `@knip/create-config`（`npm init @knip/config` / `pnpm create @knip/config` / `bun create @knip/config`）。
+**注意：没有 `knip --init` 这个命令。** 初始化走独立脚手架包 `@knip/create-config`，形态随包管理器（npm 与 bun 各有自己的 `create` 写法）。
 
-脚手架会生成 `knip.json`、往 `package.json` 写入 `"knip": "knip"` script、并装好 `typescript` 与 `@types/node`：
+脚手架会生成 `knip.json`、往 `package.json` 写入 `"knip": "knip"` script、并装好 `typescript` 与 `@types/node`。`$schema` 里的 `@6` 是**主版本号，要与项目实际装的 knip 主版本对齐**：
 
 ```json
 {
@@ -96,8 +96,8 @@ knip 自动从 `package.json` 的 `workspaces`、`pnpm-workspace.yaml`、`lerna.
 ## 常用命令
 
 ```bash
-npx knip                # 全量
-npx knip --no-exit-code # 只报告
+pnpm exec knip                # 全量
+pnpm exec knip --no-exit-code # 只报告
 ```
 
 `--fix` 存在（`-f, --fix`，会改文件），配套 `--fix-type`、`--allow-remove-files`、`-F/--format`。**首次接入不要跑 `--fix`**——它会批量删导出，在基线未立时风险太大。
@@ -105,7 +105,7 @@ npx knip --no-exit-code # 只报告
 ## 验证
 
 ```bash
-npx knip --no-exit-code
+pnpm exec knip --no-exit-code
 ```
 
 确认：配置被解析（不是静默回退）、报告里有实际的 issue 计数、没有把 `src` 整个列成未使用（若出现，通常是 `entry` 配错）。
@@ -121,4 +121,6 @@ npx knip --no-exit-code
 
 ## 出处
 
-要点 8 的推荐工具。配置键与语义取自官方 schema `https://unpkg.com/knip@6/schema.json`。
+要点 8 的推荐工具。配置键与语义取自官方 schema。
+
+取自 `knip@6.35.1` 的 schema `https://unpkg.com/knip@6/schema.json`（2026-09）。

@@ -91,7 +91,7 @@ x boundaries(dependencies): Business layers stay UI-free: a service, store, lib
 
 **按项目实际的 ESLint 主版本适配配置**，不要因为本技能的示例写了一个版本就升降项目。生态里大量插件仍以 ESLint 9 为适配基线，强推版本会连带撞上一堆 peer 冲突。
 
-探测：`package.json`、lockfile、`npx eslint --version`。各版本写法差异 → `tools/eslint-plugins.md` 的「版本适配」一节。
+探测：`package.json`、lockfile、`pnpm exec eslint --version`。各版本写法差异 → `tools/eslint-plugins.md` 的「先探测版本，再选写法」与「版本差异清单」。版本事实的权威在 `version-compat.md`。
 
 ## 跑过变异测试之后
 

@@ -11,16 +11,18 @@
 
 ---
 
-## eslint-plugin-boundaries（v7.2.0）
+## eslint-plugin-boundaries
 
 ### 安装
 
 ```bash
-npm install eslint eslint-plugin-boundaries --save-dev
-npm install -D -E eslint-import-resolver-typescript@4.4.5   # TypeScript 项目必需
+pnpm add -D eslint eslint-plugin-boundaries
+pnpm add -D --save-exact eslint-import-resolver-typescript@4.4.5   # TypeScript 项目必需
 ```
 
-**resolver 要 pin 精确版本（`-E` / `--save-exact`）**，不要用 `^`。boundaries 是通过 `eslint-module-utils` 的 **legacy 接口**（`interfaceVersion: 2`）加载 resolver 的；v5 若砍掉这个顶层导出，失败方式是**静默失效**——lint 全绿，架构约束形同虚设。pin 住版本让这类变化在升级时显式暴露。
+**resolver 要 pin 精确版本（`--save-exact`）**，不要用 `^`。boundaries 是通过 `eslint-module-utils` 的 **legacy 接口**（`interfaceVersion: 2`）加载 resolver 的；新版若砍掉这个顶层导出，失败方式是**静默失效**——lint 全绿，架构约束形同虚设。pin 住版本让这类变化在升级时显式暴露。
+
+**解除判据**：要升 resolver 主版本时，先跑一次哨兵规则 `boundaries/no-unknown-dependencies`。它报错 = resolver 接口还在，可以升；它静默 = 接口没了，别升。
 
 v3（3.10.1）与 v4（4.4.5）**配置写法零差异**，都在 `settings` 里用 `import/resolver`。回退成本为零。
 
@@ -161,13 +163,13 @@ src/services/api.ts  1:24  warning  Dependencies to elements of type "component"
 
 ---
 
-## dependency-cruiser（18.2.0）
+## dependency-cruiser
 
 ### 安装与初始化
 
 ```bash
-npm install --save-dev dependency-cruiser
-npx depcruise --init oneshot
+pnpm add -D dependency-cruiser
+pnpm exec depcruise --init oneshot
 ```
 
 `depcruise` / `dependency-cruiser` / `dependency-cruise` 是**同一程序的三个别名**（wrapper 逐字节相同）。统一用 `depcruise`。
@@ -176,11 +178,9 @@ npx depcruise --init oneshot
 
 ### 版本兼容坑（必须先看）
 
-**`dependency-cruiser@18.2.0` 不支持 `typescript@7`**（声明 `typescript: >=2.0.0 <7.0.0`）。
+**它不在 `package.json` 里声明 `typescript`**，所以包管理器拦不住 TS 主版本偏新的组合。后果是**静默返回 `0 modules, 0 dependencies cruised`**——不报错，只是什么都没检查。
 
-装 TS 7 的后果是**静默返回 `0 modules, 0 dependencies cruised`**——不报错，只是什么都没检查。装上 `typescript@6` 后才正常 cruise。
-
-**先确认项目 TS 版本**：若是 7.x，要么把 TS 降到 6.x，要么不接这个工具并在报告中说明原因。不要接上一个永远报 0 的检查。
+**先跑一次确认模块数非 0**，是 0 就别接这个工具，并在报告中说明原因。不要接上一个永远报 0 的检查。完整症状与处置 → `../version-compat.md`。
 
 ### 配置
 
@@ -217,7 +217,7 @@ module.exports = {
 **必须显式指定 `--output-type err-long`**，默认的 `err` 不打印 comment。
 
 ```bash
-depcruise --output-type err-long src
+pnpm exec depcruise --output-type err-long src
 ```
 
 这不是美观问题——文章的论点是"报错信息要和失败本身同等重要"，而 `comment` 正是"为什么有这条规则 + 怎么修"的载体。官方对 `err-long` 的说明就是"easier to put the rule into context (and if the comment contains that information: why the rule is there, and how to fix it)"。
@@ -229,7 +229,7 @@ depcruise --output-type err-long src
 `--include-only "^src"` 过滤的是 **cruise 范围**，不只是报告范围。用它限定 `src` 会让跨目录违规**根本不在被检查的模块集合里**，于是不报。
 
 ```bash
-depcruise --output-type err-long src      # ← 用位置参数，别用 --include-only
+pnpm exec depcruise --output-type err-long src      # ← 用位置参数，别用 --include-only
 ```
 
 ### `--init` 模板自带规则
@@ -246,7 +246,7 @@ depcruise --output-type err-long src      # ← 用位置参数，别用 --inclu
 
 ## oxlint
 
-文章提到了 oxlint 的 `boundaries`。**核实结论：oxlint 1.82.0 没有原生 boundaries 规则**（规则目录只有 eslint / import / jest / jsdoc / jsx_a11y / nextjs / node / oxc / promise / react / react_perf / typescript / unicorn / vitest / vue）。
+文章提到了 oxlint 的 `boundaries`。**核实结论：oxlint 没有原生 boundaries 规则**（规则目录只有 eslint / import / jest / jsdoc / jsx_a11y / nextjs / node / oxc / promise / react / react_perf / typescript / unicorn / vitest / vue）。
 
 架构边界在 oxlint 里只能走 `jsPlugins` 层（alpha），把 `eslint-plugin-boundaries` 挂上去跑，且需要配 `import/resolver`。
 
@@ -257,8 +257,8 @@ depcruise --output-type err-long src      # ← 用位置参数，别用 --inclu
 ## 验证
 
 ```bash
-npx eslint <一个违反了层规则的既有文件>
-npx depcruise --output-type err-long <src 目录>
+pnpm exec eslint <一个违反了层规则的既有文件>
+pnpm exec depcruise --output-type err-long <src 目录>
 ```
 
 四个假绿点：
@@ -266,10 +266,12 @@ npx depcruise --output-type err-long <src 目录>
 - **确认哨兵规则 `boundaries/no-unknown-dependencies` 在配置里**——这是唯一能自动发现的假绿
 - **boundaries 静默失效**最常见——跑 `boundaries/debug` 确认元素被识别（不是 `isUnknown: true`）
 - **`pattern` 写错同样静默**——`pattern: "src/services/*"` 匹配不到直接躺在 `src/services/api.ts` 的文件，规则连评估都不进入。pattern 末段带扩展名时插件会 warn（"Element patterns match folders, not individual files"），注意读它
-- **dc 报 0 modules** 通常是 TS 版本不兼容（见上）
+- **dc 报 0 modules** 通常是 TS 版本不兼容 → `../version-compat.md`
 
 **故意造一条非法依赖验证一次**，确认规则真的会报。只验证"没报错"证明不了任何事。
 
 ## 出处
 
-要点 4 的推荐工具。配置细节取自发布包源码与实跑验证（2026-09）。
+要点 4 的推荐工具。配置细节取自发布包源码。
+
+实测自 `eslint-plugin-boundaries@7.2.0`、`eslint-import-resolver-typescript@4.4.5`、`dependency-cruiser@18.2.0`、`oxlint@1.82.0`（2026-09，夹具实跑）。
