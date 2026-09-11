@@ -1,7 +1,0 @@
-node_modules/
-dist/
-coverage/
-
-# stryker 的运行产物：sandbox 副本与增量结果，都不入库
-.stryker-tmp/
-reports/

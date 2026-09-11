@@ -97,6 +97,8 @@ pnpm exec jscpd . --format markdown,html,css --threshold 15
 
 **扫描 0 个文件时仍 exit 0**，只打印 `Warning: jscpd analyzed no files`。要让空结果也报错需加 `--fail-on-empty`。
 
+**没有 `--no-exit-code` 这个选项**（实测传了会报 `unexpected argument`，提示用 `--exit-code`）。要让发现克隆也不阻塞，只有两条路：配置里写 `"exitCode": 0`，或把该命令排除出失败路径。注意 `threshold` 超限的 exit 1 **不受 `exitCode` 影响**——纯报告就别在配置里设 `threshold`，需要门槛时再用 CLI `--threshold N` 显式传。
+
 这条对"检查显示绿灯其实没跑"的场景很关键——本技能的验证步骤要确认扫描到的文件数非 0。
 
 基线门禁（`baseline`、`failOnNewClones`、`baselineFromRef`）与 CI 接线在工具里有，但**把检查变成不可跳过的门禁不在本技能范围内**——先用 `warn` 级报告跑一段时间，确认无误报再谈。

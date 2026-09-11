@@ -30,6 +30,18 @@ alwaysStrict
 
 所以对新项目，本步骤往往只是"确认已开"，不是"打开"。先读 `tsconfig.json` 再动手。
 
+**但脚手架模板是另一回事。** 实测 TS 6 的 `create-vite` react-ts 模板：`tsconfig.json` 只是 project references 空壳（`"files": []` + `references`），真正的选项在 `tsconfig.app.json` 与 `tsconfig.node.json` 里，**`strict` 都没有**，更不用说后两项。这类模板下本步骤是实打实的"打开"，而且第一个要判断的是**改哪个文件**——三个配置里只有 `tsconfig.app.json` 的 `include` 覆盖 `src`。
+
+同理，"`extends` 链"这一说法在 references 结构里不适用：脚本要按 `-p tsconfig.app.json` 跑，探针 config 也 `extends` 它而不是根 `tsconfig.json`。
+
+### TS 6 起 `baseUrl` 已弃用
+
+配路径别名的常见写法 `"baseUrl": "."` + `"paths"` 在 TS 6 下直接报 `TS5101: Option 'baseUrl' is deprecated and will stop functioning in TypeScript 7.0`（除非显式写 `ignoreDeprecations`）。处置：**不写 `baseUrl`**，`paths` 直接写相对 tsconfig 所在目录的路径：
+
+```jsonc
+{ "paths": { "@/*": ["./src/*"] } }
+```
+
 TS 7 的 `tsc --init` 真实输出片段：
 
 ```jsonc

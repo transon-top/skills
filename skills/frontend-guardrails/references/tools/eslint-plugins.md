@@ -251,6 +251,8 @@ export default [
 
 **`asWarn` 要套在每一个 preset 上，包括 `jsxA11y.flatConfigs.recommended`。** 漏套的后果是那个 preset 的规则以 `error` 进入，在既有仓库上立刻阻塞——这正是基线策略要避免的。首次生成配置后，跑一次 `eslint .` 确认输出里没有 `error` 级条目。
 
+**最容易漏的是 `vitest` 与 `playwright` 两块**——它们的 preset 里 `vitest/expect-expect`、`vitest/no-focused-tests`、`playwright/no-focused-test`、`playwright/missing-playwright-await` 默认就是 `error`，且这两块在拼装示例里是以 `files` 限定包起来的，看起来像"局部配置"而容易被当成不用降级。实测漏套时首跑直接报 `2 errors`。
+
 按 SKILL.md 的基线策略，**首次接入时把 preset 的级别整体降为 `warn`**，避免既有仓库首跑吐出数百条 `error` 让整个努力被放弃。
 
 ```js
@@ -318,13 +320,13 @@ export default [
 
   {
     files: ["tests/**"],
-    ...vitest.configs.recommended,
+    ...asWarn(vitest.configs.recommended),
     languageOptions: { globals: { ...vitest.environments.env.globals } },
   },
 
   {
     files: ["e2e/**"],
-    ...playwright.configs["flat/recommended"],
+    ...asWarn(playwright.configs["flat/recommended"]),
   },
 ];
 ```

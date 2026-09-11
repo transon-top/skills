@@ -1,9 +1,0 @@
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    // 主 tsconfig 因生成代码不兼容而关闭了该项；
-    // 这里显式开回来，让探针继续验证"flag 确实生效"。
-    "exactOptionalPropertyTypes": true
-  },
-  "include": ["probes"]
-}

@@ -93,6 +93,16 @@ knip 自动从 `package.json` 的 `workspaces`、`pnpm-workspace.yaml`、`lerna.
 
 `ignore` 列表增长是"检查正在失去覆盖"的信号，要定期复查。每个被忽略的路径就是被明确告知不要检查的一部分代码。
 
+### `unlisted` 要用 `ignoreIssues`，不是 `ignoreDependencies`
+
+工具配置文件里用 JSDoc `@type {import("pkg")}` 引用的包（如 `stryker.config.mjs` 里的 `@stryker-mutator/api/core`，它是 `core` 的传递依赖、不在项目 `package.json` 里）会被报 `Unlisted dependencies`。**`ignoreDependencies` 压不住这一类**——实测加了它报告照出，knip 还会在 hints 里提示这条配置是多余的。按文件压：
+
+```json
+{ "ignoreIssues": { "stryker.config.mjs": ["unlisted"] } }
+```
+
+`Configuration hints` 段落会提示多余的 `ignore` / `entry` 项，首次接入按它清一遍即可。
+
 ## 常用命令
 
 ```bash

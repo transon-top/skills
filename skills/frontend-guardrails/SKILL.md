@@ -44,11 +44,11 @@ disable-model-invocation: true
 
 ### 1. 检查项目现状
 
-修改任何文件前读取（存在才读）：`package.json`、lockfile、workspace 配置（`pnpm-workspace.yaml` / `workspaces` 字段）、`eslint.config.*` 或 `.eslintrc*`、`tsconfig.json` 及其 `extends` 链、OpenAPI spec 文件（`openapi.{json,yaml,yml}` / `swagger.*`）、既有测试框架与配置、`CLAUDE.md`、`AGENTS.md`。
+修改任何文件前读取（存在才读）：`package.json`、lockfile、workspace 配置（`pnpm-workspace.yaml` / `workspaces` 字段）、`eslint.config.*` 或 `.eslintrc*`、**其他 linter 的配置**（`.oxlintrc*` / `biome.json`）、`tsconfig.json` 及其 `extends` 链或 references 指向的各 config、OpenAPI spec 文件（`openapi.{json,yaml,yml}` / `swagger.*`）、既有测试框架与配置、`CLAUDE.md`、`AGENTS.md`。
 
 包管理器按此顺序判定：`package.json` 的 `packageManager` 字段 → lockfile（`pnpm-lock.yaml` / `package-lock.json` / `yarn.lock` / `bun.lockb`）→ workspace 配置。**信号互相矛盾时问用户，不猜。** 后续所有命令与 script 都按判定的结果写。
 
-**完成**：每项有结论——包管理器、是否 monorepo、**ESLint 主版本**及其配置形态（flat / legacy）、**TypeScript 版本**、有无 spec、是否 React、有无测试框架、规范文件现状。
+**完成**：每项有结论——包管理器、是否 monorepo、**ESLint 主版本**及其配置形态（flat / legacy）、有无其他 linter、**TypeScript 版本**、有无 spec、是否 React、有无测试框架、规范文件现状。
 
 已有配置先读再动：合并 / 补缺 / 优化，或用户明确要求时重建。
 
@@ -87,6 +87,7 @@ disable-model-invocation: true
 
 - **先探测项目 ESLint 主版本**，按版本选写法（见 `version-compat.md`），版本由项目定
 - 无 ESLint 时才装（`eslint` + `typescript-eslint` + `@eslint/js`），装最新版，并在报告中写明选了哪个、为什么，交用户确认
+- **项目只有别的 linter（oxlint / biome）时，先报告现状让用户选**：本簇的插件生态全部依赖 ESLint，oxlint 侧没有对应实现（boundaries 见 `tools/boundaries.md` 的 oxlint 一节）。新版 `create-vite` 模板默认给的就是 oxlint + `.oxlintrc.json`——装 ESLint 并替换、两者并存、还是整簇跳过，由用户定
 - 已有配置：**在其上追加插件，不重写**。legacy `.eslintrc*` 迁移仅在用户明确要求时做
 - 所有新启用的规则级别设 `warn`（理由见「基线策略」）
 - 边界规则：先问用户项目的层是什么（目录名 + 允许方向），代人臆造的层不成立。报错文案必须同时说明"为什么有这条规则"和"应该放到哪里"

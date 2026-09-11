@@ -174,7 +174,7 @@ pnpm exec depcruise --init oneshot
 
 `depcruise` / `dependency-cruiser` / `dependency-cruise` 是**同一程序的三个别名**（wrapper 逐字节相同）。统一用 `depcruise`。
 
-`--init oneshot` 写出的是 **`.dependency-cruiser.js`**（源码常量写的是 `.cjs`，以实测为准）。v13 起自动发现配置，无需 `--config`。
+`--init oneshot` 写出的是 **`.dependency-cruiser.cjs`**（CommonJS 导出；`export default` 形态要自己改成 `.js`）。v13 起自动发现配置，无需 `--config`。
 
 ### 版本兼容坑（必须先看）
 
@@ -223,6 +223,12 @@ pnpm exec depcruise --output-type err-long src
 这不是美观问题——文章的论点是"报错信息要和失败本身同等重要"，而 `comment` 正是"为什么有这条规则 + 怎么修"的载体。官方对 `err-long` 的说明就是"easier to put the rule into context (and if the comment contains that information: why the rule is there, and how to fix it)"。
 
 所以所有命令（含 `package.json` 里的 script）都用 `err-long`。
+
+### 两个实测的配置要点
+
+**`tsPreCompilationDeps` 要开。** 模板默认带 `true`，精简配置时容易被删掉；关掉时**只被 `import type` 引用的模块会被 `no-orphans` 误报**——实测 `src/types/order.ts` 只被类型导入引用，就被列为孤儿。
+
+**层规则的 `to` 指向生成目录时，`from` 也要排除生成目录。** 否则生成物内部文件互相 import 会被判成违规（实测报 `client-only-from-services: src/client/client.gen.ts → …`）。生成目录的规则两个方向都要写 `pathNot`。
 
 ### `--include-only` 会漏报
 

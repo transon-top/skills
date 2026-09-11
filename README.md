@@ -35,13 +35,3 @@ cp -r skills/* .claude/skills/
 | [`/obsidian-kit`](skills/obsidian-kit/SKILL.md) | Obsidian 捕获：将内容整理为项目无关的经验卡，写入已绑定 vault 的 inbox |
 | [`/feynman-explainer`](skills/feynman-explainer/SKILL.md) | 费曼式技术讲解：先立问题、给直觉，再落机制与取舍，讲到用户能自己做工程判断 |
 | [`/frontend-guardrails`](skills/frontend-guardrails/SKILL.md) | 前端护栏：按需安装 tsconfig strict / OpenAPI 契约生成 / ESLint 规则插件 / 架构边界 / 死代码与重复代码检测 / 变异测试，并注入项目规范 |
-
-## 测试
-
-部分技能带有可重复运行的夹具，用来验证技能产出仍然成立：
-
-```bash
-pnpm run test:skills
-```
-
-夹具说明与覆盖范围见 [`tests/frontend-guardrails/README.md`](tests/frontend-guardrails/README.md)。首次运行需先在夹具目录执行 `pnpm install`。

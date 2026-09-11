@@ -33,6 +33,8 @@ pnpm view <包名> peerDependencies
 
 **TS 主版本比生态基线领先一个主版本以上时，逐个工具核对 peer 范围，别一次接完。**
 
+已实测可用的组合：TypeScript 6 下 `typescript-eslint` 8.70（peer 上限 `<6.1.0`，在范围内）、`@hey-api/openapi-ts` 0.99、`dependency-cruiser` 18 都能跑（`35 modules, 62 dependencies cruised`，不是 0）。TS 6 下另有一处与版本相关的坑——`baseUrl` 已弃用，见 `tools/tsconfig.md`。
+
 ## pnpm 项目
 
 pnpm 10+ 默认拦截依赖的 build script。被拦截时 **`pnpm exec` 与 `pnpm run` 会直接报错退出**（deps-status 检查失败），不是警告。装完依赖后若命令跑不起来，先看是不是这个。

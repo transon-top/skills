@@ -126,6 +126,8 @@ pnpm dlx react-doctor@latest --scope full . --verbose
 
 首次接入只看数字，不要求修。
 
+**它自己提示"not installed"不代表没装。** 实测：`react-doctor` 已在 `devDependencies` 里、用 `pnpm exec react-doctor` 跑通扫描，末尾仍打印 `React Doctor is not installed in this project` 并建议 `npx react-doctor install --yes`——它认的是 `install` 写入的那套文件与 script，不是依赖本身。是否要 `install` 按上面的写入路径清单交用户决定，别把它当成缺依赖。
+
 ## 局限
 
 它查的是逐个文件的规则命中。**跨组件的漂移**（按钮在 A 组件有 label、在 B 组件没有）它看不见——那类问题要靠 Storybook 这类跨组件审查层。
