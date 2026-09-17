@@ -1,6 +1,6 @@
 # 命名 URL（portless）
 
-dev server 用端口区分，记不住也容易撞。`portless` 把端口换成一个稳定域名：主工作树 `https://<name>.localhost`，链接工作树自动加分支前缀（`https://fix-ui.<name>.localhost`）。免记端口、免撞端口，来源不同顺带隔离了 cookie 与 localStorage。要求 Node.js 24+。
+装与不装的判断、收益与适合的情形在 SKILL.md 第 5 步；这里是装配细节与陷阱。要求 Node.js 24+。
 
 ## 装配
 
