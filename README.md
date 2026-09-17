@@ -33,4 +33,4 @@ cp -r skills/* .claude/skills/
 | [`/anatomy-course`](skills/anatomy-course/SKILL.md) | 图解课程：从一个仓库生成"宏观思维模型"图解课程，整体图解 → 拆分讲解结构/关系/作用，产出自学 HTML 课程 |
 | [`/obsidian-kit`](skills/obsidian-kit/SKILL.md) | Obsidian 捕获：将内容整理为项目无关的经验卡，写入已绑定 vault 的 inbox |
 | [`/feynman-explainer`](skills/feynman-explainer/SKILL.md) | 费曼式技术讲解：先立问题、给直觉，再落机制与取舍，讲到用户能自己做工程判断 |
-| [`/frontend-guardrails`](skills/frontend-guardrails/SKILL.md) | 前端护栏：按需安装 ESLint 插件（React 规则 / 架构边界 / 代码质量）、死代码与重复代码检测、Vitest 与 Playwright 测试体系，并清掉存量报错 |
+| [`/frontend-guardrails`](skills/frontend-guardrails/SKILL.md) | 前端护栏：按需安装 ESLint 插件（React 规则 / 架构边界 / 代码质量）、死代码与重复代码检测、Vitest 与 Playwright 测试体系，清掉存量报错，并用 portless 给工作树配免端口的命名 URL |

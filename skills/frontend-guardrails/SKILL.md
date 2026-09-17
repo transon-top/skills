@@ -1,12 +1,12 @@
 ---
 name: frontend-guardrails
-description: 为前端项目装护栏——ESLint 插件、目录分层边界、死代码与重复代码检测、Vitest 与 Playwright 测试体系，并清掉存量报错
+description: 为前端项目装护栏——ESLint 插件、目录分层边界、死代码与重复代码检测、Vitest 与 Playwright 测试体系，清掉存量报错，并用 portless 给工作树配免端口的命名 URL
 disable-model-invocation: true
 ---
 
 # Frontend Guardrails
 
-给前端项目装上"挡住 AI 生成代码缺陷"的检查，并让它们真的在跑。八项检查默认全装、逐项可退，缺少的前置条件由本技能补齐。
+给前端项目装上"挡住 AI 生成代码缺陷"的检查，并让它们真的在跑。八项检查默认全装、逐项可退，缺少的前置条件由本技能补齐。检查之外另配一项开发体验：工作树的服务走 portless 命名 URL（第 5 步），`https://<name>.localhost` 直达、不用记端口。
 
 ## 三个词
 
@@ -18,16 +18,17 @@ disable-model-invocation: true
 
 ## 职责边界
 
-只装检查、只配测试。格式化与提交前钩子归 `/setup-pre-commit`；`.claude/settings.json` 与全局 `~/.claude/` 不代改；commit 由用户自己做；把检查挂到流水线上变成不可跳过也不在范围内。
+只装检查、配测试，外加第 5 步的 dev server 命名 URL。格式化与提交前钩子归 `/setup-pre-commit`；`.claude/settings.json` 与全局 `~/.claude/` 不代改；commit 由用户自己做；把检查挂到流水线上变成不可跳过也不在范围内。
 
 | 何时读 | 文件 | 内容 |
 | ------ | ---- | ---- |
 | 装配插件、写 flat config、排查某条规则不报 | `references/eslint.md` | 6 个插件的安装与实测陷阱 |
 | 定分层、排查 boundaries 一条不报 | `references/boundaries.md` | 目录约定流程、跨栈兜底表、四个坑 |
 | 装 knip / jscpd、装配测试框架 | `references/tools.md` | 四者的配置与陷阱 |
+| 配工作树命名 URL、URL 带端口、代理不在 443 | `references/portless.md` | portless 装配、443 前提、证书陷阱 |
 | 项目用 pnpm，或依赖里有 `typescript` / `eslint` | `references/version-compat.md` | 版本事实的唯一权威，动手前先读 |
 
-**references 总量上限 600 行**（当前 580）。加内容前先想清楚替换掉哪一段——它是实测结论的容身之处，不是配置文档的抄本。
+**references 总量上限 600 行**（当前 600）。加内容前先想清楚替换掉哪一段——它是实测结论的容身之处，不是配置文档的抄本。
 
 ---
 
@@ -58,7 +59,7 @@ disable-model-invocation: true
    - 项目只有 oxlint / biome → 并存 / 替换 / 整簇跳过
    - 已就绪 → 不出这题
 
-**默认全勾。** 缺 Vitest / Playwright 不缺选项——勾了就由第 5 步装框架补齐。唯一从选项里移出的是**项目技术栈用不上的插件**：非 React 项目不给 `react-doctor`（规则全是 React / JSX 触发点，装上一条都报不出来）。移出的项在报告里写明原因。
+**默认全勾。** 缺 Vitest / Playwright 不缺选项——勾了就由第 6 步装框架补齐。唯一从选项里移出的是**项目技术栈用不上的插件**：非 React 项目不给 `react-doctor`（规则全是 React / JSX 触发点，装上一条都报不出来）。移出的项在报告里写明原因。
 
 **完成**：八项各有"装 / 不装 / 不适用"的明确结论；每一项的缺席都有原因。
 
@@ -88,17 +89,29 @@ boundaries 只在勾选时才做；测试目录只在勾选 Vitest / Playwright 
 grep -rn "eslint-disable" --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" .
 ```
 
-**scripts**——从这里开始，后面三步每装一个工具都顺手补上，规则统一：
+**scripts**——从这里开始，后面四步每装一个工具都顺手补上，规则统一：
 
 - 逐工具一条（`lint`、`knip`、`jscpd`、`test`…），便于单点排查
 - 一条聚合 `check` 串起全部已装检查
 - **保留已有 script 不覆盖**；名字与内容按第 1 步判定的包管理器写
 - 跨 script 串联带前缀（`pnpm run lint`），script 体里调二进制写裸名（`eslint .`）
-- **knip 与 jscpd 不进 `check` 的失败路径**（见第 6 步）
+- **knip 与 jscpd 不进 `check` 的失败路径**（见第 7 步）
 
 **完成**：每个勾选的插件在项目**已有文件**上跑出非空输出——挑一个文件跑 `eslint <file>`，看到该插件的规则真的报出；`eslint .` 输出里没有解析错误；项目原有的规则一条没丢；每个 script 都实际跑过一次；存量 disable 已全部进台账。
 
-### 5. 装配测试
+### 5. 装配命名 URL（portless）
+
+工作树各起一个 dev server 时，端口是唯一的区分手段——记不住，也容易撞。`portless` 把端口换成稳定域名：主工作树 `https://<name>.localhost`，链接工作树自动加分支前缀（`https://fix-ui.<name>.localhost`）。它是**开发体验项，不是检查**：默认装、逐项可退；要求 Node.js 24+，项目版本更低就跳过并说明原因。
+
+- `AskUserQuestion` 问一次「装 / 跳过」，**默认装**
+- 保留原有 `dev` script 不动，另加一条 `dev:portless`；**script 里不写死 `-p <port>`**——代理注入 `PORT`，写死端口就与代理脱节
+- 代理必须在 443，URL 才免端口。`pnpm exec portless doctor` 不报 `Proxy is responding on port 443` 时（非交互环境拉起代理会退回非特权端口，URL 带端口），**让用户自己另开一个终端**跑 `pnpm exec portless proxy start` 并输入密码——它会 sudo 提权，密码只能交互输入，agent 不代跑，并把它写进报告的"需用户手动完成"
+
+装配细节与陷阱 → `references/portless.md`。
+
+**完成**：`pnpm dev:portless` 起得来，`portless list` 里该工作树的域名**不带端口**；任一条不成立就在报告中标注未验证，并列出用户要手跑的命令。
+
+### 6. 装配测试
 
 按第 3 步确认的目录结构装配。项目已有 Vitest / Playwright 就只补缺，没有才装：
 
@@ -108,13 +121,13 @@ grep -rn "eslint-disable" --include="*.ts" --include="*.tsx" --include="*.js" --
 
 **完成**：smoke 测试真实执行并通过（Vitest 报出非 0 的 Test Files 数；Playwright 用 `--list` 列出预期用例）；未执行的项在报告里有明确标注。
 
-### 6. 装配 knip / jscpd
+### 7. 装配 knip / jscpd
 
 两者都是**只报告、不阻塞**：不进 `check` 的失败路径，`ignore` 列表从最小开始。
 
 **完成**：两个工具的首次报告里**扫描文件数非 0**、issue 计数是真实数字——数字是 0 的"干净"是**假绿**。
 
-### 7. 清存量 + 报告
+### 8. 清存量 + 报告
 
 **只有 ESLint 进"清干净"范围**——knip 报的"没人 import 的导出"可能是给外部用的 API，jscpd 报的重复要靠重构合并，删它们比留着危险。
 
