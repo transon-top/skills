@@ -18,7 +18,7 @@ node tools/render-diagrams.mjs <file.mmd> [out.svg] [theme]  # 单文件
 node tools/render-diagrams.mjs - [theme]                     # stdin -> stdout
 ```
 
-- **输出格式** `--format svg|ascii`,默认 `svg`。`ascii` 出 Unicode 制表符画框的文本图,扩展名 `.txt`,贴进终端、Markdown 代码块、纯文本渠道;用户要在终端 / 纯文本里读图时选它。注意 ascii 按半角计宽,**中文标签的框线会错位**,中文图用 `svg`
+- **输出格式** `--format svg|ascii`,默认 `svg`。`ascii` 出 Unicode 制表符画框的文本图,扩展名 `.txt`,贴进终端、Markdown 代码块、纯文本渠道;用户要在终端 / 纯文本里读图时选它。**标签含中文就出 `svg`**——ascii 按半角计宽,中文标签的框线错位;必须出文本图时,节点只放 ASCII 概括词或序号,中文释义放图下注解列表
 - **主题** 默认 `github-light`,两种输出格式通用;15 款可选键与选型建议见 `references/themes.md`
 - **预览** 任意输入方式加 `--preview`:生成 `<tmpdir>/mermaid-preview.html`(目录模式多图合并一页)并调用系统浏览器打开
 - **成品自包含**:SVG 可直接内嵌 HTML,文本图可直接粘贴;渲染器已剥 Google Fonts `@import`,别手工加 CDN `<script>` / `<link>`
