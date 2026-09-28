@@ -57,9 +57,7 @@ disable-model-invocation: true
 
 ## 图解
 
-- 默认 **beautiful-mermaid**（`renderMermaidSVG`）直出 SVG 字符串内嵌 HTML，零 CDN、离线可用；用统一主题（`THEMES` 15 款内置主题之一），全课程风格一致
-- 支持的 6 种类型足够：flowchart（架构分层 / 依赖）、class（模块关系）、sequence（调用链）、state、ER（实体关系）、xychart
-- 需要 timeline / gantt / mindmap / C4 类型时：封装改为 **mermaid-cli**（headless 预渲染 SVG），封装处只改一处
+- **渲染与通用图解规则**见 `mermaid-diagrams` skill：用 `../mermaid-diagrams/tools/render-diagrams.mjs` 渲染（`.mmd` → `.svg`，自包含、统一主题；方法论：类型选择 / 节点上限 / 命名 / 主题统一）。该 skill 未安装时**停止并提示安装**，不要退回手工拼 SVG
 - **节点上限 6**：每张图最多 6 个主要元素（flowchart 计方框，sequence 计参与者，class 计类，ER 计实体，state 计状态）。超限的主题拆成**图组**：按读数顺序拆成 2~3 张姊妹子图，图名以 `-1`/`-2` 后缀编号，相邻排放同一处；大图渲染慢、视线扫不到，拆成小图逐张读，观感更好
 - **严格展开树**：全课程共一棵树。第 0 层 = 仓库总览（L01，≤6 节点，按真实运行时链路建）；之后的每张图**恰好是前面某张图某个节点的展开**——展开图以被展开节点为入口（标题 + 首节点标注同词同名、"从哪进"唯一），图内节点是该节点的分解细节。展开顺序：按 7 步读取顺序，优先展开"脊柱"节点（被最多依赖 / 最先执行）；两者冲突时以实际代码分析出的主线优先
 - **图组结构**：多张图时第 1 图是**总览**（画整体心智模型），其余子图按读数顺序拆解；每张子图的第一个节点必须在总览图中找得到（同一概念作锚点，同词，读者知道"从哪进"）
@@ -67,15 +65,12 @@ disable-model-invocation: true
 - **锚点**：图面只放节点名；图下注解列表按序号放「节点名 — 锚点（仓库相对路径:符号）— 一句话说明」，与"长文案注解列表"合并。每个节点必须能追溯一个代码实体（文件 / 目录 / 符号 / 事件名）
 - **来源 / 依据**：图下并列「来源：文档（如 `docs/architecture.md`，可无）+ 依据：代码锚点（必有）」。依据是代码事实，来源是文档出处，两者分开写
 - **概念豁免**：**仓库外**概念（ACP 协议、CI 工具等）允许每课 ≤1 个概念段落，不上图；仓库内核心概念（Event / Context / Store / Provider 类）**不豁免**——只要能给"谁创建它、谁使用它、生命周期、关联概念"各指出代码实体，就可以上图上成概念课（用 class/依赖图）。只有 Cordis 语法课（L02）允许"概念节点"的图，且该课不进展开树，作为**语法附录**放在 L01 之后——语法课先学语言，再进读码地图
-- 每张"全景图"可附带 ASCII 渲染版（纯文本/终端阅读降级）
 
-## 工具链(技能自带)
+## 工具链
 
-图形与课程组装脚本在 `tools/`(与 skills 一起发布),首次使用在本目录执行:
+课程组装脚本在 `tools/`(零依赖,无需安装)。**图渲染不在本 skill**——用 `mermaid-diagrams` skill 的 `../mermaid-diagrams/tools/render-diagrams.mjs`(首次先 `cd ../mermaid-diagrams/tools && npm install`);该 skill 未安装时停止并提示安装,不要退回手工拼 SVG。
 
 ```sh
-cd tools && npm install        # 安装 beautiful-mermaid
-node tools/render-diagrams.mjs <图源目录> <SVG输出目录> [theme]   # .mmd → .svg
 node tools/build-lesson.mjs <模板目录> <SVG目录> <成品目录>        # .html.tpl → .html(内嵌 SVG)
 node tools/fix-links.mjs <模板目录> [参考目录]                     # nav # 占位 → 上一课/下一课/目录
 node tools/verify-anchors.mjs <图源目录> <仓库根> [--strict]       # 节点名 ↔ 代码符号校验
