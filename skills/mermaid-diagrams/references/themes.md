@@ -1,6 +1,6 @@
 # beautiful-mermaid 主题(15 款)
 
-`render-diagrams.mjs` 的 `[theme]` 参数取值,默认 `github-light`。
+`render-diagrams.mjs` 的 `[theme]` 参数取值,默认 `github-light`,SVG 与 ascii 两种输出格式通用(ascii 的颜色只在终端输出与 `--preview` 里显形)。
 
 ## 亮色
 

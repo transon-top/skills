@@ -34,4 +34,4 @@ cp -r skills/* .claude/skills/
 | [`/obsidian-kit`](skills/obsidian-kit/SKILL.md) | Obsidian 捕获：将内容整理为项目无关的经验卡，写入已绑定 vault 的 inbox |
 | [`/feynman-explainer`](skills/feynman-explainer/SKILL.md) | 费曼式技术讲解：先立问题、给直觉，再落机制与取舍，讲到用户能自己做工程判断 |
 | [`/frontend-guardrails`](skills/frontend-guardrails/SKILL.md) | 前端护栏：按需安装 ESLint 插件（React 规则 / 架构边界 / 代码质量）、死代码与重复代码检测、Vitest 与 Playwright 测试体系，清掉存量报错，并用 portless 给工作树配免端口的命名 URL |
-| [`/mermaid-diagrams`](skills/mermaid-diagrams/SKILL.md) | 图解渲染：将 Mermaid 图源渲染为离线自包含 SVG（目录批量 / 单文件 / stdin），附通用图解方法论——类型选择、节点上限与拆图组、命名、主题统一 |
+| [`/mermaid-diagrams`](skills/mermaid-diagrams/SKILL.md) | 图解渲染：将 Mermaid 图源渲染为离线自包含 SVG 或终端 / 纯文本可读的文本图（目录批量 / 单文件 / stdin，svg / ascii 两种输出格式），附通用图解方法论——类型选择、拆图（总览 + 展开）、命名、主题统一 |
