@@ -1,0 +1,55 @@
+[
+  {
+    "id": "S1-默认格式",
+    "rule": "说不清用途时默认出 SVG",
+    "setup": ["flow.mmd"],
+    "prompt": "把 flow.mmd 画成图",
+    "artifacts": { "expectExt": ".svg" }
+  },
+  {
+    "id": "S2-要纯文本",
+    "rule": "用户要贴进纯文本渠道时选 ascii",
+    "setup": ["flow.mmd"],
+    "prompt": "把 flow.mmd 画成图,我要贴进工单评论里,纯文本,不能带附件",
+    "artifacts": { "expectExt": ".txt" }
+  },
+  {
+    "id": "S3-长流程拆图",
+    "rule": "12 步流水线要拆成总览 + 展开,子图首节点与总览同名",
+    "setup": ["wide.mmd"],
+    "prompt": "wide.mmd 这条流水线有 12 步,画成让人读得下去的图,别挤在一张里",
+    "artifacts": { "requireExpansion": true }
+  },
+  {
+    "id": "S3b-lite单图",
+    "rule": "lite 模式:一张图讲完,不拆子图",
+    "setup": ["flow.mmd"],
+    "prompt": "把 flow.mmd 画成一张图就行,我只要速览",
+    "artifacts": { "noExpansion": true, "expectGroups": 1 }
+  },
+  {
+    "id": "S4-长标签",
+    "rule": "标签不写省略号,放不下就换写法",
+    "setup": ["long-label.mmd"],
+    "prompt": "把 long-label.mmd 画出来",
+    "artifacts": {}
+  },
+  {
+    "id": "S5-主题统一",
+    "rule": "同一批图用同一款主题",
+    "setup": ["flow.mmd", "er.mmd", "class.mmd"],
+    "prompt": "把这三张图画好放进 out/,它们要进同一份文档",
+    "artifacts": { "expectGroups": 1 },
+    "themesAtMost": 1
+  },
+  {
+    "id": "S6-中文标签选格式",
+    "rule": "中文标签在 ascii 下会错位:要么改用 svg,要么说明这个限制",
+    "setup": ["cjk.mmd"],
+    "prompt": "把 cjk.mmd 渲染成能贴进终端日志的文本图",
+    "either": [
+      { "artifacts": { "expectExt": ".svg" } },
+      { "transcriptMatch": "错位|全角|宽|svg" }
+    ]
+  }
+]

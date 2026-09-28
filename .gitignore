@@ -1,2 +1,5 @@
 node_modules
+
+# 测试脚手架默认不入库;mermaid-diagrams 那套是技能的回归网,单独放行
 tests/*
+!tests/mermaid/

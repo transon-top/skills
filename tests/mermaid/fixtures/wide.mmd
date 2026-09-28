@@ -1,0 +1,12 @@
+graph TD
+  N01[Collect] --> N02[Parse]
+  N02 --> N03[Validate]
+  N03 --> N04[Normalize]
+  N04 --> N05[Enrich]
+  N05 --> N06[Index]
+  N06 --> N07[Rank]
+  N07 --> N08[Filter]
+  N08 --> N09[Render]
+  N09 --> N10[Export]
+  N10 --> N11[Notify]
+  N11 --> N12[Archive]
