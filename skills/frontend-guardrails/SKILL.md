@@ -1,12 +1,12 @@
 ---
 name: frontend-guardrails
-description: 为前端项目装护栏——ESLint 插件、目录分层边界、死代码与重复代码检测、Vitest 与 Playwright 测试体系，清掉存量报错，并按需用 portless 给工作树配免端口的命名 URL
+description: 为前端项目装护栏——ESLint 插件、目录分层边界、死代码与重复代码检测、Vitest 与 Playwright 测试体系，接入提交前门禁（Husky + lint-staged + Prettier），清掉存量报错，并按需用 portless 给工作树配免端口的命名 URL
 disable-model-invocation: true
 ---
 
 # Frontend Guardrails
 
-给前端项目装上"挡住 AI 生成代码缺陷"的检查，并让它们真的在跑。八项检查默认全装、逐项可退，缺少的前置条件由本技能补齐。检查之外另有一项可选的开发体验：工作树的服务走 portless 命名 URL（第 5 步）。
+给前端项目装上"挡住 AI 生成代码缺陷"的检查，让它们真的在跑，并收进提交门禁。八项检查分类列出、默认全装、逐项可退，缺少的前置条件由本技能补齐；第 8 步把检查接进 pre-commit，第 5 步另有一项可选的开发体验：工作树的服务走 portless 命名 URL。
 
 ## 三个词
 
@@ -18,7 +18,7 @@ disable-model-invocation: true
 
 ## 职责边界
 
-只装检查、配测试，外加第 5 步可选的 dev server 命名 URL。格式化与提交前钩子归 `/setup-pre-commit`；`.claude/settings.json` 与全局 `~/.claude/` 不代改；commit 由用户自己做；把检查挂到流水线上变成不可跳过也不在范围内。
+装检查、配测试、接提交前门禁（第 8 步，含格式化），外加第 5 步可选的 dev server 命名 URL。`.claude/settings.json` 与全局 `~/.claude/` 不代改；**commit 由用户自己做**；把检查挂到 CI 流水线上变成不可跳过也不在范围内。
 
 | 何时读 | 文件 | 内容 |
 | ------ | ---- | ---- |
@@ -46,22 +46,30 @@ disable-model-invocation: true
 
 **完成**：每项有结论——包管理器、是否 monorepo 及其包列表、**ESLint 主版本**与配置形态（flat / legacy / 无）、有无其他 linter、是否 React 及框架栈、有无 Vitest / Playwright、git 状态。
 
-### 2. 确认选项
+### 2. 选装工具
 
-用 `AskUserQuestion` 一次问四题（每题 `multiSelect: true`）：
+**先选工具，再定装配**——两轮都在动手前问完，第 3 步起的目录与配置都依赖这里的结论。
 
-1. **ESLint 插件**：`eslint-plugin-react-doctor`（React 专属规则集，默认启用 566 条，含 jsx-a11y 无障碍规则：性能陷阱、可访问性、bundle 体积）／`eslint-plugin-boundaries`（守住目录分层，禁止 service 反向 import 组件这类依赖方向违规）／`eslint-plugin-sonarjs`（通用代码质量：认知复杂度过高、重复条件分支、重复字符串字面量）／`eslint-plugin-react-you-might-not-need-an-effect`（专查不必要的 `useEffect`：状态同步、派生值、响应 prop 变化）
-2. **续**：`@vitest/eslint-plugin`（单测规则：测试里没有断言、忘了删的 `.only`）／`eslint-plugin-playwright`（E2E 规则：测试里的条件语句、漏 `await` 的断言、忘了删的 `.only`）／`knip`（找死代码：没人 import 的文件、没人用的 export、不再需要的依赖）／`jscpd`（找重复代码：同一段逻辑被写了两遍）
-3. **monorepo**（仅检测到 workspace 时）：装根 / 逐包 / 两者，**默认根**
-4. **ESLint 基建**（按下述现状取一面）：
-   - 项目无 ESLint → 装整套基建 / 只装 eslint / 整簇跳过
-   - 项目是 legacy `.eslintrc*` → 迁移到 flat / 跳过 `react-doctor` / 整簇跳过
-   - 项目只有 oxlint / biome → 并存 / 替换 / 整簇跳过
-   - 已就绪 → 不出这题
+**第一轮**用 `AskUserQuestion` 分类列举全部可装项——三题工具（每题 `multiSelect: true`）加一题门禁（单选），题干写明**默认全选**（门禁默认装整套）、不要的取消勾选：
 
-**默认全勾。** 缺 Vitest / Playwright 不缺选项——勾了就由第 6 步装框架补齐。唯一从选项里移出的是**项目技术栈用不上的插件**：非 React 项目不给 `react-doctor`（规则全是 React / JSX 触发点，装上一条都报不出来）。移出的项在报告里写明原因。
+1. **应用代码规则**（写进 `src` 的 ESLint 规则）：`eslint-plugin-react-doctor`（React 专属规则集，默认启用 566 条，含 jsx-a11y 无障碍规则：性能陷阱、可访问性、bundle 体积）／`eslint-plugin-boundaries`（守住目录分层，禁止 service 反向 import 组件这类依赖方向违规）／`eslint-plugin-sonarjs`（通用代码质量：认知复杂度过高、重复条件分支、重复字符串字面量）／`eslint-plugin-react-you-might-not-need-an-effect`（专查不必要的 `useEffect`：状态同步、派生值、响应 prop 变化）
+2. **测试代码规则**（只对测试文件生效）：`@vitest/eslint-plugin`（单测规则：测试里没有断言、忘了删的 `.only`）／`eslint-plugin-playwright`（E2E 规则：测试里的条件语句、漏 `await` 的断言、忘了删的 `.only`）
+3. **仓库级工具**（独立 CLI，扫全仓、只报告不阻塞）：`knip`（找死代码：没人 import 的文件、没人用的 export、不再需要的依赖）／`jscpd`（找重复代码：同一段逻辑被写了两遍）
+4. **提交门禁**（把上面的检查收进 commit，装法是第 8 步；单选、**默认装整套**）：装整套（Husky + lint-staged + Prettier：暂存区格式化与 `eslint --fix`，提交前再跑 typecheck 与单测）／跳过（格式化与提交门禁都不做）
 
-**完成**：八项各有"装 / 不装 / 不适用"的明确结论；每一项的缺席都有原因。
+缺 Vitest / Playwright 不缺选项——勾了就由第 6 步装框架补齐。唯一从选项里移出的是**项目技术栈用不上的插件**：非 React 项目不给 `react-doctor`（规则全是 React / JSX 触发点，装上一条都报不出来）。移出的项在报告里写明原因。
+
+**第二轮**（需要时才开，同样 `AskUserQuestion`，每题单选）：
+
+- **ESLint 现状处置**（项目 ESLint 未就绪时才出）：
+  - 项目无 ESLint → 装整套基建 / 只装 eslint / 整簇跳过
+  - 项目是 legacy `.eslintrc*` → 迁移到 flat / 跳过 `react-doctor` / 整簇跳过
+  - 项目只有 oxlint / biome → 并存 / 替换 / 整簇跳过
+- **安装范围**（仅检测到 workspace 时）：装根 / 逐包 / 两者，**默认装根**
+
+第二轮会作废第一轮的部分勾选——**"只装 eslint"与"整簇跳过"废掉全部 ESLint 插件，"跳过 `react-doctor`"只废掉那一条**；报告第 3 段逐项写明。
+
+**完成**：八项检查与提交门禁各有"装 / 不装 / 不适用"的结论，装配问题各有选择；每一项的缺席都有原因。
 
 ### 3. 目录约定
 
@@ -71,13 +79,13 @@ disable-model-invocation: true
 2. 用官方约定作为提议；查不到就用 `references/boundaries.md` 的兜底表
 3. **`AskUserQuestion` 请用户确认或修改**——层与方向必须来自用户，代人臆造的层不成立
 
-boundaries 只在勾选时才做；测试目录只在勾选 Vitest / Playwright 时才做。
+boundaries 只在勾选、且未被第 2 步的现状处置作废时才做；测试目录只在勾选 Vitest / Playwright 时才做。
 
 **完成**：两项各有用户确认过的具体结论（层名、方向、目录路径），不是"按最佳实践"。
 
 ### 4. 装配 ESLint
 
-**基建**（项目没有时）：`eslint`、`@eslint/js`（**主版本必须与项目 eslint 对齐，显式 pin**）、`typescript-eslint`、`globals`。TS 项目缺 `typescript-eslint` 时 `.tsx` 直接解析失败，插件全部失效。
+**基建**（项目没有 ESLint 且未选"只装 eslint"时）：`eslint`、`@eslint/js`（**主版本必须与项目 eslint 对齐，显式 pin**）、`typescript-eslint`、`globals`。TS 项目缺 `typescript-eslint` 时 `.tsx` 直接解析失败，插件全部失效。
 
 **插件**（勾选的）：`eslint-plugin-react-doctor` 的 config 不带 `files` 也不带 parser，必须自己包一层，否则 flat config 匹配不到 `.tsx`，一条规则都不跑。
 
@@ -89,7 +97,7 @@ boundaries 只在勾选时才做；测试目录只在勾选 Vitest / Playwright 
 grep -rn "eslint-disable" --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" .
 ```
 
-**scripts**——从这里开始，后面四步每装一个工具都顺手补上，规则统一：
+**scripts**——从这里开始，后面几步每装一个工具都顺手补上，规则统一：
 
 - 逐工具一条（`lint`、`knip`、`jscpd`、`test`…），便于单点排查
 - 一条聚合 `check` 串起全部已装检查
@@ -130,7 +138,60 @@ grep -rn "eslint-disable" --include="*.ts" --include="*.tsx" --include="*.js" --
 
 **完成**：两个工具的首次报告里**扫描文件数非 0**、issue 计数是真实数字——数字是 0 的"干净"是**假绿**。
 
-### 8. 清存量 + 报告
+### 8. 装配提交门禁
+
+**把前面装的检查收进 commit**——`/setup-pre-commit` 那套流程在这里落地：Husky + lint-staged + Prettier + typecheck + 单测。第 2 步勾了门禁才做；**钩子只能装仓库根**——git hooks 挂在根上，monorepo 各 workspace 共用一条，与"安装范围"无关。
+
+**依赖**：`husky`、`lint-staged`、`prettier`。
+
+**初始化**：`pnpm exec husky init`——建 `.husky/`、往 `package.json` 写 `prepare: "husky"`。仓库已有 Husky 就不重跑 init，只补缺：`prepare` 里加 `husky`、缺的钩子行补上。
+
+**三个文件**（都已存在就合并，不覆盖已有内容）：
+
+`.husky/pre-commit`（husky v9+ 不要 shebang；命令按第 1 步判定的包管理器写）：
+
+```bash
+pnpm exec lint-staged
+pnpm run typecheck
+pnpm run test
+```
+
+- `typecheck`：TS 项目没有这个 script 就补 `"typecheck": "tsc --noEmit"`；项目有自己的类型检查命令（如 `vue-tsc`）就用它
+- `test`：必须是 run 形态——`vitest` 裸跑在交互式终端会进 watch、把提交挂住；script 写成 `vitest run`，watch 另开 `test:watch`
+- 每行只在对应工具真的装了、且跑得通时才写（见下）
+
+`.lintstagedrc`：
+
+```json
+{
+  "*": "prettier --ignore-unknown --write",
+  "*.{ts,tsx,js,jsx}": "eslint --fix"
+}
+```
+
+`eslint` 那行只在勾了且项目有 ESLint 配置时写；`--ignore-unknown` 放行 Prettier 不认识的文件。
+
+`.prettierrc`（`.prettierrc*`、`prettier.config.*`、`package.json` 的 `prettier` 键全都没有时才建）：
+
+```json
+{
+  "useTabs": false,
+  "tabWidth": 2,
+  "printWidth": 80,
+  "singleQuote": false,
+  "trailingComma": "es5",
+  "semi": true,
+  "arrowParens": "always"
+}
+```
+
+**不进钩子**：knip 与 jscpd 全仓扫描、只报告（第 7 步的立场延续）；Playwright E2E 要浏览器与 dev server；全量 `lint` 在存量没清完时每次都挡，挡出来的只会是 `--no-verify`。钩子 = 暂存区（秒级）+ 全量 typecheck 与单测，速度封顶在这里。
+
+**每条命令手动跑一遍**：`pnpm exec lint-staged`（无暂存文件时空跑）、`pnpm run typecheck`、`pnpm run test`。**跑不通的命令不写进钩子**——红的门禁没人会留——写进报告的"需用户手动完成"。
+
+**完成**：`.husky/pre-commit` 可执行、内容与第 2 步勾选一致；`git config core.hooksPath` 有值；`sh .husky/pre-commit` 手动跑过；每条命令单独跑过且全绿，没跑通或没装的项在报告里有记录。**提交由用户做**——报告里标注"下次提交起生效"，并把"提交一次、确认门禁真实拦人"写进需用户手动完成的清单。
+
+### 9. 清存量 + 报告
 
 **只有 ESLint 进"清干净"范围**——knip 报的"没人 import 的导出"可能是给外部用的 API，jscpd 报的重复要靠重构合并，删它们比留着危险。
 
@@ -145,7 +206,7 @@ grep -rn "eslint-disable" --include="*.ts" --include="*.tsx" --include="*.js" --
 3. **跳过**——每项附原因（前置不满足 / 用户未勾选 / 未验证）
 4. **基线**——清存量前后各多少条；到顶时列出剩余清单
 5. **验证结果**——真实执行过的命令与原始输出、明确标注未验证项
-6. **需用户手动完成**——如 `/setup-pre-commit`、`playwright install`
+6. **需用户手动完成**——如 `playwright install`、portless 代理提权、**提交一次确认门禁真实拦人**
 7. **本次修改过的文件路径**——逐条列出，用户据此和自己未提交的改动分开
 
 **完成**：七段齐全；第 3、5 段没有空缺；每个数字来自实际执行，没有执行过的命令不出现在报告里。
