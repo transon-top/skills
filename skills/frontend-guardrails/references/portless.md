@@ -16,7 +16,7 @@ pnpm add -D portless
 
 ## 代理不在 443 = URL 带端口
 
-代理监听 443，URL 才免端口。非交互环境（agent 拉起）不弹 sudo，退回非特权端口，URL 变成 `https://<name>.localhost:1355` 这种。
+代理监听 443，URL 才免端口。非交互环境（agent 拉起）分两条路：**自动拉起直接报错退出**（`Proxy is not running and no TTY is available for sudo.`）；显式 `proxy start` 才退回非特权端口 1355，URL 变成 `https://<name>.localhost:1355` 这种。
 
 - 判定：`pnpm exec portless doctor` 报 `Proxy is responding on port 443`
 - 修法：**提示用户自己另开一个终端**跑 `pnpm exec portless proxy start` 并输入密码——它自动 sudo 提权，密码只能交互输入，agent 不代跑，也不要塞进会话内执行；开机自启用 `pnpm exec portless service install`

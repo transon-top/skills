@@ -4,7 +4,7 @@
 
 探测：`package.json` 的 `eslint` 字段、lockfile、`pnpm exec eslint --version`。
 
-**纯数组 `export default [...]` 是唯一在 ESLint 8.56 / 9 / 10 上全通的写法**，一律用它，不引入 `defineConfig`。ESLint 9 起 flat config 是默认——项目里有 `.eslintrc.*` 但没有 `eslint.config.*` 时直接报错找不到配置文件，ESLint 10 完全移除了 legacy。**迁移 legacy 到 flat 不在本技能职责内**，报告给用户决定。
+**多段配置就用纯数组 `export default [...]`**——它是唯一在 ESLint 8.56 / 9 / 10 上全通的写法，不引入 `defineConfig`。ESLint 9 起 flat config 是默认——项目里有 `.eslintrc.*` 但没有 `eslint.config.*` 时直接报错找不到配置文件，ESLint 10 完全移除了 legacy。**迁移 legacy 到 flat 不在本技能职责内**，报告给用户决定。
 
 主版本差异与 pnpm 陷阱 → `version-compat.md`。
 
@@ -68,7 +68,7 @@ TS 项目**必须**有 `typescript-eslint` 提供 parser，否则 `Parsing error
 
 规则名打错会让 ESLint 直接崩（exit 2），不会静默——这点是好的。
 
-**`settings["react-doctor"].portedRuleMode` 默认 `"curated"`**，它按 React / Next 语境降噪：`alt-text` 对 `opengraph-image.*` / `icon.*` / `twitter-image.*` / `apple-icon.*` 整个文件跳过；`anchor-has-content` 在 `page.*` / `layout.*` 下不触发；`aria-role` 对自定义组件跳过（`ignoreNonDOM`）。这是作者有意的设计，覆盖成 `"raw"` 才会全报。**保持默认**，但知道有这个东西——排查"某条 a11y 规则为什么不报"时先看这里。
+**`settings["react-doctor"].portedRuleMode` 默认 `"curated"`**，但它当前**只对两条规则降噪**：`alt-text` 对 `opengraph-image.*` / `icon.*` / `twitter-image.*` / `apple-icon.*` 整个文件跳过；`aria-role` 对自定义组件跳过（`ignoreNonDOM`）。`anchor-has-content` 在 `page.*` / `layout.*` 下**照报**——别指望路由级抑制。覆盖成 `"raw"` 才会全报。**保持默认**，排查"某条 a11y 规则为什么不报"时先看这里。
 
 ### sonarjs
 
@@ -79,20 +79,7 @@ export default [sonarjs.configs.recommended];
 
 只有 `configs.recommended` 与 `configs["recommended-legacy"]`，**没有 `strict`，没有 `flat/` 前缀**。自带 `plugins`，不含 `files`，作用于所有文件。
 
-**两条规则建议首次接入即关掉**（实测在普通项目上只产生噪声）：
-
-```js
-{
-  ...sonarjs.configs.recommended,
-  rules: {
-    ...sonarjs.configs.recommended.rules,
-    "sonarjs/file-header": "off",              // 要求每个文件带版权头
-    "sonarjs/no-implicit-dependencies": "off", // 认不出 Vite peer 依赖与 tsconfig paths 别名
-  },
-}
-```
-
-第二条尤其要关：只要项目用路径别名（`@/`），它会对**每一个别名 import** 报 `Either remove this import or add it as a dependency`，让真正的依赖问题淹没在噪声里。
+`file-header`（版权头）与 `no-implicit-dependencies`（认不出 Vite peer 依赖与 tsconfig paths 别名）在 `recommended` 里**已是 `off`**，不用手动关；要打开就预期噪声——后者会对**每一个别名 import** 报 `Either remove this import or add it as a dependency`，让真正的依赖问题淹没在噪声里。
 
 ### react-you-might-not-need-an-effect
 
@@ -101,7 +88,7 @@ import reactYouMightNotNeedAnEffect from "eslint-plugin-react-you-might-not-need
 export default [reactYouMightNotNeedAnEffect.configs.recommended];
 ```
 
-`recommended` 与 `strict` **规则集相同，只差级别**。都自带 `files`、`plugins`、`languageOptions`，可裸放。
+`recommended` 与 `strict` **规则集相同，只差级别**（另有 `legacy-recommended` / `legacy-strict`）。都自带 `files`、`plugins`、`languageOptions`，可裸放。
 
 ### @vitest/eslint-plugin
 
@@ -133,7 +120,7 @@ export default [
 ];
 ```
 
-**flat config 下必须用 `flat/recommended`。`configs.recommended` 是 legacy 版**——`plugins` 是字符串数组，flat 下直接用会静默失效。这是最容易踩的一个坑。
+**flat config 下必须用 `flat/recommended`。`configs.recommended` 是 legacy 版**（带 `env` 键、`plugins` 是字符串数组）——flat 下**启动即报错**，错误信息直指修法，不是静默失效。这是最容易踩的一个坑。
 
 ### boundaries
 

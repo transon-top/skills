@@ -16,7 +16,8 @@
 
 - **优先复用项目现有的 Vite 配置**（`mergeConfig` 或 `defineConfig` 内引用），没有 Vitest 配置时才创建
 - **environment 最小化**：只有需要 DOM API 的测试用 `jsdom` / `happy-dom`，纯逻辑保持默认 `node`。DOM 环境每个测试文件初始化开销最大，全局 jsdom 是为了省事，不是合理配置
-- 需要多环境时用 `test.projects` 按 include glob 分组（Vitest v4 方案，`environmentMatchGlobs` 已移除）
+- 需要多环境时用 `test.projects` 按 include glob 分组（v4 起、v5 沿用；`environmentMatchGlobs` 已移除）
+- **v5 起 `clearMocks` 默认 `true`**；`mergeConfig` 合并的共享配置别含 `test.projects`，嵌套会被当容器
 - **mock 隔离**：`restoreMocks: true`（恢复 spy 实现）或 `mockReset: true`（清 history + implementation）至少开一个，防测试间泄漏
 - `coverage.include: ['src']` 用**项目根相对路径**，不是含糊的 contains
 
@@ -53,7 +54,7 @@ export default defineConfig({
 
 ### 写作
 
-Locator 优先级：role → label → visible text → 稳定 test id，避免依赖 DOM 结构的 CSS / XPath。Playwright 的 locator 自带 auto-wait，配合 web-first assertions（`expect(locator).toBeVisible()`）轮询等待——**不手写 `waitForTimeout`**。
+Locator 优先级：role → text → label/placeholder → altText/title → 稳定 test id；避免依赖 DOM 结构的 CSS / XPath。Playwright 的 locator 自带 auto-wait，配合 web-first assertions（`expect(locator).toBeVisible()`）轮询等待——**不手写 `waitForTimeout`**。
 
 Fixture 管可复用的 setup，helper 减少机械重复（登录、测试数据）。**核心业务断言留在测试文件里**：
 
@@ -124,10 +125,10 @@ pnpm exec knip --no-exit-code
 
 找文本级重复。v5 是 Rust 重写，自包含二进制。
 
-配置文件 **`.jscpd.json`**，**只在当前工作目录查找，不向上遍历父目录**。**必须 camelCase**，且有三个文档没写清的坑：
+配置按 `--config` → `.jscpd.json` → `.config/jscpd.json` → `package.json#jscpd` 发现；自动发现**只在当前工作目录**，不向上遍历。键以 camelCase 为准（kebab-case 别名也认），**拼错的键被静默忽略**。三个坑：
 
-1. **类型错误会让整个配置文件被静默丢弃**，回退到全默认值（未知键只是警告，类型错了是整份作废）
-2. **`failOnNewClones` 是数字不是布尔**（`0` = 零容忍）
+1. **类型错误只丢那一个字段**——打印 `invalid value for 'x'`，其余字段照常生效、退出码不变；报错一闪而过、配置半生效才是坑
+2. **`failOnNewClones` 是数字不是布尔**（`0` = 零容忍），且必须配合 `--baseline` / `--baseline-from-ref`
 3. **`skipComments` 键在 v5 不存在**，配置里用 `"mode": "weak"`
 
 ### 关键项
@@ -139,9 +140,9 @@ pnpm exec knip --no-exit-code
 | `ignore` | `[]` | **文件级 glob** 忽略 |
 | `ignorePattern` | `[]` | **代码级正则**，匹配到的 token 被跳过 |
 | `threshold` | `null` | 最大重复百分比，超过则 exit 1 |
-| `exitCode` | `null`（默认 1） | 发现 clone 就以此码退出 |
+| `exitCode` | 未配置 = 无闸门 | 发现 clone 仍 exit 0；显式配置（或 CLI `--exit-code`）才以此码退出 |
 
-`--ignore`（文件 glob）与 `--ignore-pattern`（代码正则）是两个不同选项——npm README 的选项表把它们混为一谈，以 `--help` 为准。CLI 上的 `--ignore-pattern` 按逗号切分，正则里含逗号（`{1,3}`、`[,;]`）必须放进配置文件。
+`--ignore`（文件 glob）与 `--ignore-pattern`（代码正则）是两个不同选项，两者都按逗号切分；`--ignore-pattern` 的正则里含逗号（`{1,3}`、`[,;]`）时必须放进配置文件。
 
 ### `ignore` 里先排除三类
 
@@ -165,9 +166,9 @@ pnpm exec jscpd . --format markdown,html,css --threshold 15
 
 ### 退出码与假绿
 
-**扫描 0 个文件时仍 exit 0**，只打印 `Warning: jscpd analyzed no files`。这是这个工具最容易**假绿**的地方。
+**扫描 0 个文件时仍 exit 0**，只打印 `Warning: jscpd analyzed no files`——这是它最容易**假绿**的地方，CI 加 `--fail-on-empty`（配置 `failOnEmpty`）把它变成 exit 1。
 
-**没有 `--no-exit-code`**（传了报 `unexpected argument`）。要让发现克隆也不阻塞，只能配置里写 `"exitCode": 0`，或把该命令排除出失败路径。注意 `threshold` 超限的 exit 1 **不受 `exitCode` 影响**——纯报告就别在配置里设 `threshold`。
+**没有 `--no-exit-code`**（传了报 `unexpected argument`）。默认本来就不阻塞——发现 clone 退出码仍是 0，`exitCode` 只在显式配置时才是闸门。`threshold` 超限的 exit 1 **不受 `exitCode` 影响**——纯报告就别设 `threshold`。
 
 ### 验证
 

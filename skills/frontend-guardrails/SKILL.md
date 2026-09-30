@@ -28,7 +28,7 @@ disable-model-invocation: true
 | 配工作树命名 URL、URL 带端口、代理不在 443 | `references/portless.md` | portless 装配、443 前提、证书陷阱 |
 | 项目用 pnpm，或依赖里有 `typescript` / `eslint` | `references/version-compat.md` | 版本事实的唯一权威，动手前先读 |
 
-**references 总量上限 600 行**（当前 600）。加内容前先想清楚替换掉哪一段——它是实测结论的容身之处，不是配置文档的抄本。
+**references 总量上限 600 行**（当前 588）。加内容前先想清楚替换掉哪一段——它是实测结论的容身之处，不是配置文档的抄本。
 
 ---
 
@@ -50,12 +50,12 @@ disable-model-invocation: true
 
 **先选工具，再定装配**——两轮都在动手前问完，第 3 步起的目录与配置都依赖这里的结论。
 
-**第一轮**用 `AskUserQuestion` 分类列举全部可装项——三题工具（每题 `multiSelect: true`）加一题门禁（单选），题干写明**默认全选**（门禁默认装整套）、不要的取消勾选：
+**第一轮**用 `AskUserQuestion` 分类列举全部可装项——三题工具 `multiSelect: true`、一题门禁（单选）；题干写明**默认全选**（门禁装整套），不要的取消勾选：
 
 1. **应用代码规则**（写进 `src` 的 ESLint 规则）：`eslint-plugin-react-doctor`（React 专属规则集，默认启用 566 条，含 jsx-a11y 无障碍规则：性能陷阱、可访问性、bundle 体积）／`eslint-plugin-boundaries`（守住目录分层，禁止 service 反向 import 组件这类依赖方向违规）／`eslint-plugin-sonarjs`（通用代码质量：认知复杂度过高、重复条件分支、重复字符串字面量）／`eslint-plugin-react-you-might-not-need-an-effect`（专查不必要的 `useEffect`：状态同步、派生值、响应 prop 变化）
 2. **测试代码规则**（只对测试文件生效）：`@vitest/eslint-plugin`（单测规则：测试里没有断言、忘了删的 `.only`）／`eslint-plugin-playwright`（E2E 规则：测试里的条件语句、漏 `await` 的断言、忘了删的 `.only`）
 3. **仓库级工具**（独立 CLI，扫全仓、只报告不阻塞）：`knip`（找死代码：没人 import 的文件、没人用的 export、不再需要的依赖）／`jscpd`（找重复代码：同一段逻辑被写了两遍）
-4. **提交门禁**（把上面的检查收进 commit，装法是第 8 步；单选、**默认装整套**）：装整套（Husky + lint-staged + Prettier：暂存区格式化与 `eslint --fix`，提交前再跑 typecheck 与单测）／跳过（格式化与提交门禁都不做）
+4. **提交门禁**（装法见第 8 步；单选、**默认装整套**）：装整套（Husky + lint-staged + Prettier：暂存区格式化与 `eslint --fix`，再跑 typecheck 与单测）／跳过
 
 缺 Vitest / Playwright 不缺选项——勾了就由第 6 步装框架补齐。唯一从选项里移出的是**项目技术栈用不上的插件**：非 React 项目不给 `react-doctor`（规则全是 React / JSX 触发点，装上一条都报不出来）。移出的项在报告里写明原因。
 
@@ -116,7 +116,7 @@ grep -rn "eslint-disable" --include="*.ts" --include="*.tsx" --include="*.js" --
 - **可以跳过**：几乎不用 worktree，或同一时间只跑一个项目——收益有限，跳过是正常选择、不是欠账；报告"跳过"段写"用户未勾选"，不写"未验证"
 - 要求 Node.js 24+，项目版本更低就跳过并说明原因
 
-装了才做这些：保留原有 `dev` script 不动，另加一条 `dev:portless`；**script 里不写死 `-p <port>`**——代理注入 `PORT`，写死端口就与代理脱节。代理必须在 443，URL 才免端口。`pnpm exec portless doctor` 不报 `Proxy is responding on port 443` 时（非交互环境拉起代理会退回非特权端口，URL 带端口），**让用户自己另开一个终端**跑 `pnpm exec portless proxy start` 并输入密码——它会 sudo 提权，密码只能交互输入，agent 不代跑，并把它写进报告的"需用户手动完成"。
+装了才做这些：保留原有 `dev` script 不动，另加一条 `dev:portless`；**script 里不写死 `-p <port>`**——代理注入 `PORT`，写死端口就与代理脱节。代理必须在 443，URL 才免端口。`pnpm exec portless doctor` 不报 `Proxy is responding on port 443` 时（非交互环境自动拉起代理会直接报错退出；显式 `proxy start` 才退回非特权端口、URL 带端口），**让用户自己另开一个终端**跑 `pnpm exec portless proxy start` 并输入密码——它会 sudo 提权，密码只能交互输入，agent 不代跑，并把它写进报告的"需用户手动完成"。
 
 装配细节与陷阱 → `references/portless.md`。
 
@@ -140,15 +140,13 @@ grep -rn "eslint-disable" --include="*.ts" --include="*.tsx" --include="*.js" --
 
 ### 8. 装配提交门禁
 
-**把前面装的检查收进 commit**——`/setup-pre-commit` 那套流程在这里落地：Husky + lint-staged + Prettier + typecheck + 单测。第 2 步勾了门禁才做；**钩子只能装仓库根**——git hooks 挂在根上，monorepo 各 workspace 共用一条，与"安装范围"无关。
+**把检查收进 commit**——`/setup-pre-commit` 整套在这里落地：Husky + lint-staged + Prettier + typecheck + 单测。第 2 步勾了才做；**钩子只能装仓库根**——monorepo 各 workspace 共用一条，与"安装范围"无关。
 
-**依赖**：`husky`、`lint-staged`、`prettier`。
+**依赖**：`husky`、`lint-staged`、`prettier`。**初始化**：`pnpm exec husky init`（建 `.husky/`、写 `prepare: "husky"`）；已有 Husky 只补缺，不重跑 init——它会无条件覆写已有的 `prepare` 与 `.husky/pre-commit`。
 
-**初始化**：`pnpm exec husky init`——建 `.husky/`、往 `package.json` 写 `prepare: "husky"`。仓库已有 Husky 就不重跑 init，只补缺：`prepare` 里加 `husky`、缺的钩子行补上。
+**三个文件**，已存在就合并、不覆盖：
 
-**三个文件**（都已存在就合并，不覆盖已有内容）：
-
-`.husky/pre-commit`（husky v9+ 不要 shebang；命令按第 1 步判定的包管理器写）：
+`.husky/pre-commit`（v9+ 不要 shebang；命令随第 1 步的包管理器）：
 
 ```bash
 pnpm exec lint-staged
@@ -156,40 +154,19 @@ pnpm run typecheck
 pnpm run test
 ```
 
-- `typecheck`：TS 项目没有这个 script 就补 `"typecheck": "tsc --noEmit"`；项目有自己的类型检查命令（如 `vue-tsc`）就用它
-- `test`：必须是 run 形态——`vitest` 裸跑在交互式终端会进 watch、把提交挂住；script 写成 `vitest run`，watch 另开 `test:watch`
-- 每行只在对应工具真的装了、且跑得通时才写（见下）
+- `typecheck` 缺失才补 `"typecheck": "tsc --noEmit"`；自有命令（如 `vue-tsc`）优先
+- `test` 必须 `vitest run`——裸 `vitest` 在交互式终端进 watch、把提交挂住；watch 另开 `test:watch`
+- 每行只在对应工具真的装了、且跑得通时才写
 
-`.lintstagedrc`：
+`.lintstagedrc`（`eslint` 那行只在装了且项目有 ESLint 配置时写；`--ignore-unknown` 放行 Prettier 不认识的文件）：`{ "*": "prettier --ignore-unknown --write", "*.{ts,tsx,js,jsx}": "eslint --fix" }`。**lint-staged v17.5 起 intent-to-add（`git add -N`）的文件会被拒**——按提示普通 `git add` 即可。
 
-```json
-{
-  "*": "prettier --ignore-unknown --write",
-  "*.{ts,tsx,js,jsx}": "eslint --fix"
-}
-```
+`.prettierrc`（`.prettierrc*` / `prettier.config.*` / `package.json#prettier` / `package.yaml#prettier` 全无时才建）：`{ "useTabs": false, "tabWidth": 2, "printWidth": 80, "singleQuote": false, "trailingComma": "es5", "semi": true, "arrowParens": "always" }`
 
-`eslint` 那行只在勾了且项目有 ESLint 配置时写；`--ignore-unknown` 放行 Prettier 不认识的文件。
+**不进钩子**：knip 与 jscpd（全仓扫描、只报告）；Playwright E2E（要浏览器与 dev server）；全量 `lint`（存量未清时每次都挡，挡出来的只有 `--no-verify`）。钩子 = 暂存区（秒级）+ 全量 typecheck 与单测。
 
-`.prettierrc`（`.prettierrc*`、`prettier.config.*`、`package.json` 的 `prettier` 键全都没有时才建）：
+**每条命令先手动跑一遍**（`lint-staged` 无暂存文件时空跑），跑不通的不写进钩子、写进报告的"需用户手动完成"。
 
-```json
-{
-  "useTabs": false,
-  "tabWidth": 2,
-  "printWidth": 80,
-  "singleQuote": false,
-  "trailingComma": "es5",
-  "semi": true,
-  "arrowParens": "always"
-}
-```
-
-**不进钩子**：knip 与 jscpd 全仓扫描、只报告（第 7 步的立场延续）；Playwright E2E 要浏览器与 dev server；全量 `lint` 在存量没清完时每次都挡，挡出来的只会是 `--no-verify`。钩子 = 暂存区（秒级）+ 全量 typecheck 与单测，速度封顶在这里。
-
-**每条命令手动跑一遍**：`pnpm exec lint-staged`（无暂存文件时空跑）、`pnpm run typecheck`、`pnpm run test`。**跑不通的命令不写进钩子**——红的门禁没人会留——写进报告的"需用户手动完成"。
-
-**完成**：`.husky/pre-commit` 可执行、内容与第 2 步勾选一致；`git config core.hooksPath` 有值；`sh .husky/pre-commit` 手动跑过；每条命令单独跑过且全绿，没跑通或没装的项在报告里有记录。**提交由用户做**——报告里标注"下次提交起生效"，并把"提交一次、确认门禁真实拦人"写进需用户手动完成的清单。
+**完成**：`.husky/pre-commit` 内容与勾选一致（可执行位非必需——git 跑的是 husky 生成的 `.husky/_/` shim）；`git config core.hooksPath` 有值；`sh .husky/pre-commit` 跑过；每条命令单独全绿，没跑通或没装的在报告里有记录。**提交仍由用户做**——报告标"下次提交起生效"，并把"提交一次确认门禁拦人"列进需用户手动完成。
 
 ### 9. 清存量 + 报告
 

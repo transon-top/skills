@@ -14,7 +14,7 @@ pnpm view <包名> peerDependencies
 
 ## ESLint 主版本
 
-生态里大量插件仍以 ESLint 9 为适配基线，**强推版本会连带撞上一堆 peer 冲突**。按项目已有的主版本适配写法（→ `eslint.md`）。
+**9.x 已于 2026-08 EOL**；主流插件正迁往 10，尾部插件仍以 9 为基线，**强推版本会连带撞上 peer 冲突**。按项目已有的主版本适配写法（→ `eslint.md`）。
 
 **项目没有 ESLint 时**才需要选版本：装最新版，并在报告里写明选了哪个、为什么。
 
@@ -39,12 +39,12 @@ pnpm view <包名> peerDependencies
 
 ## pnpm 项目
 
-pnpm 10+ 默认拦截依赖的 build script。被拦截时 **`pnpm exec` 与 `pnpm run` 会直接报错退出**（deps-status 检查失败），不是警告。装完依赖后若命令跑不起来，先看是不是这个。
+pnpm 10 起默认拦截依赖的 build script，装完只**警告**；**11+（含当前 12.x）才升级成硬报错**——`pnpm exec` / `pnpm run` 触发 deps 检查后直接退出。装完依赖后若命令跑不起来，先看是不是这个。
 
 设置写在 **`pnpm-workspace.yaml`**，不是 `package.json` 的 `pnpm` 字段（后者已被忽略，只打一行警告）：
 
 ```yaml
-# pnpm 11 的设置名是 allowBuilds（映射）；旧名 onlyBuiltDependencies 已不再读取
+# 设置名是 allowBuilds（10.26+ 引入）；11+ 起旧名 onlyBuiltDependencies 不再被读取
 allowBuilds:
   esbuild: true
   unrs-resolver: true
