@@ -31,6 +31,7 @@ pnpm view <包名> peerDependencies
 | 工具 | 症状 | 处置 |
 | ---- | ---- | ---- |
 | `typescript-eslint` | 安装期 peer 警告，或解析时报不支持 | peer 里声明了 TS 上限，`pnpm view` 核对 |
+| `typescript-eslint` + TS 7 | 启动即报 `typescript-eslint does not support TS 7.0.`，ESLint exit 2 | 降 TS 主版本（实测 5.9 可跑）或等插件支持；不要追最新 TS |
 | `eslint-plugin-react-doctor` | 无 | 它**完全不声明 peerDependencies**（连 key 都没有）——装不冲突，也没有保护；ESLint 主版本不受约束 |
 | `eslint-import-resolver-typescript` | boundaries 静默失效 | 必须 pin 精确版本，理由见 `boundaries.md` 坑 B |
 

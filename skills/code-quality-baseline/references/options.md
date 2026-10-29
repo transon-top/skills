@@ -37,6 +37,7 @@
 - 键拼错只丢那一个字段，其余照常生效；报错一闪而过
 - `--ignore`（文件 glob）与 `--ignore-pattern`（代码正则）是两个选项；正则含逗号时放进配置文件
 - `format` 里 `typescript` 与 `tsx` 分开；JS 项目再加 `javascript` / `jsx`
+- `Files analyzed` 只统计达到 `minTokens` / `minLines` 的文件，少于项目文件数正常；为 0 才是假绿
 - `threshold` 的 exit 1 不受 `exitCode` 影响；纯报告就别设 `threshold`
 
 ### semantic（实验性）

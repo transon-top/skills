@@ -33,7 +33,7 @@ disable-model-invocation: true
 | 项目用 pnpm，或依赖里有 `typescript` / `eslint` | `references/version-compat.md` | 版本事实的唯一权威，动手前先读 |
 | 改阈值、调整规则、查工具选项 | `references/options.md` | 规则默认值、jscpd / knip 选项与陷阱 |
 
-**references 总量上限 600 行**（当前 413）。加内容前先想清楚替换掉哪一段——它是实测结论的容身之处，不是配置文档的抄本。
+**references 总量上限 600 行**（当前 415）。加内容前先想清楚替换掉哪一段——它是实测结论的容身之处，不是配置文档的抄本。
 
 ## 适配点
 
