@@ -1,12 +1,12 @@
 ---
 name: frontend-guardrails
-description: 为前端项目装护栏——ESLint 插件、目录分层边界、死代码与重复代码检测、Vitest 与 Playwright 测试体系，接入提交前门禁（Husky + lint-staged + Prettier），清掉存量报错，并按需用 portless 给工作树配免端口的命名 URL
+description: 为前端项目装护栏——ESLint 插件、目录分层边界，接入提交前门禁（Husky + lint-staged + Prettier），清掉存量报错，并按需用 portless 给工作树配免端口的命名 URL
 disable-model-invocation: true
 ---
 
 # Frontend Guardrails
 
-给前端项目装上"挡住 AI 生成代码缺陷"的检查，让它们真的在跑，并收进提交门禁。八项检查分类列出、默认全装、逐项可退，缺少的前置条件由本技能补齐；第 8 步把检查接进 pre-commit，第 5 步另有一项可选的开发体验：工作树的服务走 portless 命名 URL。
+给前端项目装上"挡住 AI 生成代码缺陷"的检查，让它们真的在跑，并收进提交门禁。四项检查分类列出、默认全装、逐项可退，缺少的前置条件由本技能补齐；第 6 步把检查接进 pre-commit，第 5 步另有一项可选的开发体验：工作树的服务走 portless 命名 URL。
 
 ## 三个词
 
@@ -18,17 +18,16 @@ disable-model-invocation: true
 
 ## 职责边界
 
-装检查、配测试、接提交前门禁（第 8 步，含格式化），外加第 5 步可选的 dev server 命名 URL。`.claude/settings.json` 与全局 `~/.claude/` 不代改；**commit 由用户自己做**；把检查挂到 CI 流水线上变成不可跳过也不在范围内。
+装检查、接提交前门禁（第 6 步，含格式化），外加第 5 步可选的 dev server 命名 URL。`.claude/settings.json` 与全局 `~/.claude/` 不代改；**commit 由用户自己做**；把检查挂到 CI 流水线上变成不可跳过也不在范围内。
 
 | 何时读 | 文件 | 内容 |
 | ------ | ---- | ---- |
-| 装配插件、写 flat config、排查某条规则不报 | `references/eslint.md` | 6 个插件的安装与实测陷阱 |
+| 装配插件、写 flat config、排查某条规则不报 | `references/eslint.md` | 各插件的安装与实测陷阱 |
 | 定分层、排查 boundaries 一条不报 | `references/boundaries.md` | 目录约定流程、跨栈兜底表、四个坑 |
-| 装 knip / jscpd、装配测试框架 | `references/tools.md` | 四者的配置与陷阱 |
 | 配工作树命名 URL、URL 带端口、代理不在 443 | `references/portless.md` | portless 装配、443 前提、证书陷阱 |
 | 项目用 pnpm，或依赖里有 `typescript` / `eslint` | `references/version-compat.md` | 版本事实的唯一权威，动手前先读 |
 
-**references 总量上限 600 行**（当前 588）。加内容前先想清楚替换掉哪一段——它是实测结论的容身之处，不是配置文档的抄本。
+**references 总量上限 600 行**（当前 368）。加内容前先想清楚替换掉哪一段——它是实测结论的容身之处，不是配置文档的抄本。
 
 ---
 
@@ -36,7 +35,7 @@ disable-model-invocation: true
 
 ### 1. 检测现状
 
-修改任何文件前读取（存在才读）：`package.json`、lockfile、workspace 配置（`pnpm-workspace.yaml` / `workspaces` 字段）、`eslint.config.*` 或 `.eslintrc*`、其他 linter 的配置（`.oxlintrc*` / `biome.json`）、测试框架配置、`CLAUDE.md`、`AGENTS.md`。
+修改任何文件前读取（存在才读）：`package.json`、lockfile、workspace 配置（`pnpm-workspace.yaml` / `workspaces` 字段）、`eslint.config.*` 或 `.eslintrc*`、其他 linter 的配置（`.oxlintrc*` / `biome.json`）、`CLAUDE.md`、`AGENTS.md`。
 
 包管理器按此顺序判定：`package.json` 的 `packageManager` 字段 → lockfile → workspace 配置。**信号互相矛盾时问用户，不猜。**
 
@@ -44,20 +43,18 @@ disable-model-invocation: true
 
 再跑一次 `git status`：工作区脏就**警告用户、等确认再继续**——技能会改代码，混在一起后用户分不出哪些是技能改的。
 
-**完成**：每项有结论——包管理器、是否 monorepo 及其包列表、**ESLint 主版本**与配置形态（flat / legacy / 无）、有无其他 linter、是否 React 及框架栈、有无 Vitest / Playwright、git 状态。
+**完成**：每项有结论——包管理器、是否 monorepo 及其包列表、**ESLint 主版本**与配置形态（flat / legacy / 无）、有无其他 linter、是否 React 及框架栈、git 状态。
 
 ### 2. 选装工具
 
 **先选工具，再定装配**——两轮都在动手前问完，第 3 步起的目录与配置都依赖这里的结论。
 
-**第一轮**用 `AskUserQuestion` 分类列举全部可装项——三题工具 `multiSelect: true`、一题门禁（单选）；题干写明**默认全选**（门禁装整套），不要的取消勾选：
+**第一轮**用 `AskUserQuestion` 分类列举全部可装项——一题工具 `multiSelect: true`、一题门禁（单选）；题干写明**默认全选**（门禁装整套），不要的取消勾选：
 
 1. **应用代码规则**（写进 `src` 的 ESLint 规则）：`eslint-plugin-react-doctor`（React 专属规则集，默认启用 566 条，含 jsx-a11y 无障碍规则：性能陷阱、可访问性、bundle 体积）／`eslint-plugin-boundaries`（守住目录分层，禁止 service 反向 import 组件这类依赖方向违规）／`eslint-plugin-sonarjs`（通用代码质量：认知复杂度过高、重复条件分支、重复字符串字面量）／`eslint-plugin-react-you-might-not-need-an-effect`（专查不必要的 `useEffect`：状态同步、派生值、响应 prop 变化）
-2. **测试代码规则**（只对测试文件生效）：`@vitest/eslint-plugin`（单测规则：测试里没有断言、忘了删的 `.only`）／`eslint-plugin-playwright`（E2E 规则：测试里的条件语句、漏 `await` 的断言、忘了删的 `.only`）
-3. **仓库级工具**（独立 CLI，扫全仓、只报告不阻塞）：`knip`（找死代码：没人 import 的文件、没人用的 export、不再需要的依赖）／`jscpd`（找重复代码：同一段逻辑被写了两遍）
-4. **提交门禁**（装法见第 8 步；单选、**默认装整套**）：装整套（Husky + lint-staged + Prettier：暂存区格式化与 `eslint --fix`，再跑 typecheck 与单测）／跳过
+2. **提交门禁**（装法见第 6 步；单选、**默认装整套**）：装整套（Husky + lint-staged + Prettier：暂存区格式化与 `eslint --fix`，再跑 typecheck）／跳过
 
-缺 Vitest / Playwright 不缺选项——勾了就由第 6 步装框架补齐。唯一从选项里移出的是**项目技术栈用不上的插件**：非 React 项目不给 `react-doctor`（规则全是 React / JSX 触发点，装上一条都报不出来）。移出的项在报告里写明原因。
+唯一从选项里移出的是**项目技术栈用不上的插件**：非 React 项目不给 `react-doctor` 与 `react-you-might-not-need-an-effect`（规则全是 React / JSX 触发点，装上一条都报不出来）。移出的项在报告里写明原因。
 
 **第二轮**（需要时才开，同样 `AskUserQuestion`，每题单选）：
 
@@ -69,19 +66,19 @@ disable-model-invocation: true
 
 第二轮会作废第一轮的部分勾选——**"只装 eslint"与"整簇跳过"废掉全部 ESLint 插件，"跳过 `react-doctor`"只废掉那一条**；报告第 3 段逐项写明。
 
-**完成**：八项检查与提交门禁各有"装 / 不装 / 不适用"的结论，装配问题各有选择；每一项的缺席都有原因。
+**完成**：四项检查与提交门禁各有"装 / 不装 / 不适用"的结论，装配问题各有选择；每一项的缺席都有原因。
 
 ### 3. 目录约定
 
-两个产出：**boundaries 的层定义**（目录名 + 允许方向）、**测试目录结构**。两者走同一条流程：
+一个产出：**boundaries 的层定义**（目录名 + 允许方向）。流程：
 
 1. 按第 1 步判定的技术栈查 Context7，找框架官方文档里的目录约定
 2. 用官方约定作为提议；查不到就用 `references/boundaries.md` 的兜底表
 3. **`AskUserQuestion` 请用户确认或修改**——层与方向必须来自用户，代人臆造的层不成立
 
-boundaries 只在勾选、且未被第 2 步的现状处置作废时才做；测试目录只在勾选 Vitest / Playwright 时才做。
+boundaries 只在勾选、且未被第 2 步的现状处置作废时才做。
 
-**完成**：两项各有用户确认过的具体结论（层名、方向、目录路径），不是"按最佳实践"。
+**完成**：用户确认过的具体结论（层名、方向、目录路径），不是"按最佳实践"。
 
 ### 4. 装配 ESLint
 
@@ -99,11 +96,10 @@ grep -rn "eslint-disable" --include="*.ts" --include="*.tsx" --include="*.js" --
 
 **scripts**——从这里开始，后面几步每装一个工具都顺手补上，规则统一：
 
-- 逐工具一条（`lint`、`knip`、`jscpd`、`test`…），便于单点排查
+- 逐工具一条（`lint`、`typecheck`…），便于单点排查
 - 一条聚合 `check` 串起全部已装检查
 - **保留已有 script 不覆盖**；名字与内容按第 1 步判定的包管理器写
 - 跨 script 串联带前缀（`pnpm run lint`），script 体里调二进制写裸名（`eslint .`）
-- **knip 与 jscpd 不进 `check` 的失败路径**（见第 7 步）
 
 **完成**：每个勾选的插件在项目**已有文件**上跑出非空输出——挑一个文件跑 `eslint <file>`，看到该插件的规则真的报出；`eslint .` 输出里没有解析错误；项目原有的规则一条没丢；每个 script 都实际跑过一次；存量 disable 已全部进台账。
 
@@ -122,25 +118,9 @@ grep -rn "eslint-disable" --include="*.ts" --include="*.tsx" --include="*.js" --
 
 **完成**：装了的——`pnpm dev:portless` 起得来，`portless list` 里该工作树的域名**不带端口**；任一条不成立就在报告中标注未验证，并列出用户要手跑的命令。跳过的——报告"跳过"段写明"用户未勾选"。
 
-### 6. 装配测试
+### 6. 装配提交门禁
 
-按第 3 步确认的目录结构装配。项目已有 Vitest / Playwright 就只补缺，没有才装：
-
-- 依赖 + config（复用项目现有 Vite 配置）
-- **一个真实能跑的 smoke 测试**。只写 config 不写测试，`files` 匹配到空目录——插件一条不报，正是**假绿**
-- Playwright 浏览器**默认不装**，`AskUserQuestion` 问用户是否继续（几百 MB 且失败率高）。不装就在报告里标注未验证
-
-**完成**：smoke 测试真实执行并通过（Vitest 报出非 0 的 Test Files 数；Playwright 用 `--list` 列出预期用例）；未执行的项在报告里有明确标注。
-
-### 7. 装配 knip / jscpd
-
-两者都是**只报告、不阻塞**：不进 `check` 的失败路径，`ignore` 列表从最小开始。
-
-**完成**：两个工具的首次报告里**扫描文件数非 0**、issue 计数是真实数字——数字是 0 的"干净"是**假绿**。
-
-### 8. 装配提交门禁
-
-**把检查收进 commit**——`/setup-pre-commit` 整套在这里落地：Husky + lint-staged + Prettier + typecheck + 单测。第 2 步勾了才做；**钩子只能装仓库根**——monorepo 各 workspace 共用一条，与"安装范围"无关。
+**把检查收进 commit**——`/setup-pre-commit` 整套在这里落地：Husky + lint-staged + Prettier + typecheck。第 2 步勾了才做；**钩子只能装仓库根**——monorepo 各 workspace 共用一条，与"安装范围"无关。
 
 **依赖**：`husky`、`lint-staged`、`prettier`。**初始化**：`pnpm exec husky init`（建 `.husky/`、写 `prepare: "husky"`）；已有 Husky 只补缺，不重跑 init——它会无条件覆写已有的 `prepare` 与 `.husky/pre-commit`。
 
@@ -151,26 +131,24 @@ grep -rn "eslint-disable" --include="*.ts" --include="*.tsx" --include="*.js" --
 ```bash
 pnpm exec lint-staged
 pnpm run typecheck
-pnpm run test
 ```
 
 - `typecheck` 缺失才补 `"typecheck": "tsc --noEmit"`；自有命令（如 `vue-tsc`）优先
-- `test` 必须 `vitest run`——裸 `vitest` 在交互式终端进 watch、把提交挂住；watch 另开 `test:watch`
 - 每行只在对应工具真的装了、且跑得通时才写
 
 `.lintstagedrc`（`eslint` 那行只在装了且项目有 ESLint 配置时写；`--ignore-unknown` 放行 Prettier 不认识的文件）：`{ "*": "prettier --ignore-unknown --write", "*.{ts,tsx,js,jsx}": "eslint --fix" }`。**lint-staged v17.5 起 intent-to-add（`git add -N`）的文件会被拒**——按提示普通 `git add` 即可。
 
 `.prettierrc`（`.prettierrc*` / `prettier.config.*` / `package.json#prettier` / `package.yaml#prettier` 全无时才建）：`{ "useTabs": false, "tabWidth": 2, "printWidth": 80, "singleQuote": false, "trailingComma": "es5", "semi": true, "arrowParens": "always" }`
 
-**不进钩子**：knip 与 jscpd（全仓扫描、只报告）；Playwright E2E（要浏览器与 dev server）；全量 `lint`（存量未清时每次都挡，挡出来的只有 `--no-verify`）。钩子 = 暂存区（秒级）+ 全量 typecheck 与单测。
+**不进钩子**：全量 `lint`（存量未清时每次都挡，挡出来的只有 `--no-verify`）。钩子 = 暂存区（秒级）+ 全量 typecheck。
 
 **每条命令先手动跑一遍**（`lint-staged` 无暂存文件时空跑），跑不通的不写进钩子、写进报告的"需用户手动完成"。
 
 **完成**：`.husky/pre-commit` 内容与勾选一致（可执行位非必需——git 跑的是 husky 生成的 `.husky/_/` shim）；`git config core.hooksPath` 有值；`sh .husky/pre-commit` 跑过；每条命令单独全绿，没跑通或没装的在报告里有记录。**提交仍由用户做**——报告标"下次提交起生效"，并把"提交一次确认门禁拦人"列进需用户手动完成。
 
-### 9. 清存量 + 报告
+### 7. 清存量 + 报告
 
-**只有 ESLint 进"清干净"范围**——knip 报的"没人 import 的导出"可能是给外部用的 API，jscpd 报的重复要靠重构合并，删它们比留着危险。
+**只有 ESLint 报出的问题进"清干净"范围。**
 
 先 `eslint --fix`，再手工修剩下的。**上限 20 个文件 / 100 条错误，到顶就停**，把剩余清单交给用户。这个上限是硬约束：用户在执行前无法预知技能会改多少东西，无上限的全仓重写比留着告警更糟。
 
@@ -183,7 +161,7 @@ pnpm run test
 3. **跳过**——每项附原因（前置不满足 / 用户未勾选 / 未验证）
 4. **基线**——清存量前后各多少条；到顶时列出剩余清单
 5. **验证结果**——真实执行过的命令与原始输出、明确标注未验证项
-6. **需用户手动完成**——如 `playwright install`、portless 代理提权、**提交一次确认门禁真实拦人**
+6. **需用户手动完成**——如 portless 代理提权、**提交一次确认门禁真实拦人**
 7. **本次修改过的文件路径**——逐条列出，用户据此和自己未提交的改动分开
 
 **完成**：七段齐全；第 3、5 段没有空缺；每个数字来自实际执行，没有执行过的命令不出现在报告里。

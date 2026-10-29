@@ -10,8 +10,8 @@ pnpm add -D portless
 
 `portless.json`：`{ "name": "myapp", "script": "dev" }`——`script` 是要跑哪条 npm script，缺省取 `package.json` 的 `name` 与 `dev`。
 
-- **保留原有 `dev` script 不动**，另加一条 `dev:portless`（内容就是 `portless`）；CI 与 E2E 的 `webServer` 继续走固定端口
-- 走 portless 起服务时，**`baseURL` 与 `webServer.url` 必须一致**这条照旧——此时写它打印的域名，不再是 `localhost:<port>`
+- **保留原有 `dev` script 不动**，另加一条 `dev:portless`（内容就是 `portless`）；CI 继续走固定端口
+- 走 portless 起服务时，访问地址写它打印的域名，不再是 `localhost:<port>`
 - **script 里不写死 `-p <port>`**：代理注入 `PORT`（另有 `PORTLESS_URL`、`NODE_EXTRA_CA_CERTS`），Next 未传 `-p` 时读它
 
 ## 代理不在 443 = URL 带端口

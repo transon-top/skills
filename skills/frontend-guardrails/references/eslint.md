@@ -16,8 +16,6 @@ pnpm add -D \
   eslint-plugin-sonarjs \
   eslint-plugin-react-you-might-not-need-an-effect \
   eslint-plugin-react-doctor \
-  @vitest/eslint-plugin \
-  eslint-plugin-playwright \
   eslint-plugin-boundaries \
   eslint-import-resolver-typescript
 ```
@@ -90,38 +88,6 @@ export default [reactYouMightNotNeedAnEffect.configs.recommended];
 
 `recommended` 与 `strict` **规则集相同，只差级别**（另有 `legacy-recommended` / `legacy-strict`）。都自带 `files`、`plugins`、`languageOptions`，可裸放。
 
-### @vitest/eslint-plugin
-
-```js
-import vitest from "@vitest/eslint-plugin";
-
-export default [
-  {
-    files: ["tests/**"],                                  // ← 自己加，recommended 不含 files
-    ...vitest.configs.recommended,
-    languageOptions: { globals: { ...vitest.environments.env.globals } },
-  },
-];
-```
-
-preset 只有 `recommended` / `all` / `env` / `legacy-recommended` / `legacy-all`，**没有 `flat/recommended`**。
-
-`vitest/expect-expect`（测试无断言）与 `vitest/no-focused-tests`（忘删的 `.only`）在 `recommended` 里都是 `error`。`no-focused-tests` 默认 `fixable: true`，**会自动删掉 `.only`**。
-
-**不要用 `eslint-plugin-vitest`**——那是社区旧包（最后发布 2024-04，peer 范围不含 ESLint 10），仓库已 transfer 给 vitest 官方并从 `@vitest/eslint-plugin` 继续发版。**它在 npm 上没有被标记 deprecated**，`npm outdated` 和 renovate 都不会提示。
-
-### eslint-plugin-playwright
-
-```js
-import playwright from "eslint-plugin-playwright";
-
-export default [
-  { files: ["e2e/**"], ...playwright.configs["flat/recommended"] },
-];
-```
-
-**flat config 下必须用 `flat/recommended`。`configs.recommended` 是 legacy 版**（带 `env` 键、`plugins` 是字符串数组）——flat 下**启动即报错**，错误信息直指修法，不是静默失效。这是最容易踩的一个坑。
-
 ### boundaries
 
 配置细节 → `boundaries.md`。
@@ -154,8 +120,6 @@ export default [
   },
 }
 ```
-
-别名与命名这两条的理由不是美观：**死代码检测依赖路径与命名**。文件名与导出名保持一致——命名随机会让 `knip` 的报告失真（它认不出这个文件就是那个模块）。
 
 ## 验证
 
