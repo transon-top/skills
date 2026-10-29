@@ -2,17 +2,16 @@
 
 ## 项目的 ESLint 版本决定写法
 
-探测：`package.json` 的 `eslint` 字段、lockfile、`pnpm exec eslint --version`。
+探测：`package.json` 的 `eslint` 字段、lockfile、`<exec> eslint --version`。
 
-**多段配置就用纯数组 `export default [...]`**——它是唯一在 ESLint 8.56 / 9 / 10 上全通的写法，不引入 `defineConfig`。ESLint 9 起 flat config 是默认——项目里有 `.eslintrc.*` 但没有 `eslint.config.*` 时直接报错找不到配置文件，ESLint 10 完全移除了 legacy。**迁移 legacy 到 flat 不在本技能职责内**，报告给用户决定。
+**多段配置就用纯数组 `export default [...]`**——它是唯一在 ESLint 8.56 / 9 / 10 上全通的写法，不引入 `defineConfig`。ESLint 9 起 flat config 是默认——项目里有 `.eslintrc.*` 但没有 `eslint.config.*` 时直接报错找不到配置文件，ESLint 10 完全移除了 legacy。**迁移 legacy 到 flat 是否执行由第 2 步的现状处置决定**；执行时按本文的 flat config 落地，只做配置迁移、不改业务代码。
 
 主版本差异与 pnpm 陷阱 → `version-compat.md`。
 
 ## 安装
 
 ```bash
-pnpm add -D \
-  @eslint/js globals typescript-eslint \
+<install> @eslint/js globals typescript-eslint \
   eslint-plugin-sonarjs \
   eslint-plugin-react-you-might-not-need-an-effect \
   eslint-plugin-react-doctor \
@@ -55,7 +54,7 @@ export default [
 
 TS 项目**必须**有 `typescript-eslint` 提供 parser，否则 `Parsing error: Unexpected token <`。`files` 里留着 `.ts` 无害但无收益——规则几乎全是 JSX 触发点，普通 `.ts` 上一条都报不出。
 
-框架 config（`next` 23 条、`react-native` 32 条、`tanstack-start` 14 条、`tanstack-query` 9 条）按第 3 步的确认结果追加，放在 `recommended` 之后。
+框架 config（`next` 23 条、`react-native` 32 条、`tanstack-start` 14 条、`tanstack-query` 9 条）按第 1 步探测的框架栈追加，放在 `recommended` 之后。
 
 **规则级覆盖只接受裸字符串**，不支持 options：
 
@@ -124,14 +123,14 @@ export default [reactYouMightNotNeedAnEffect.configs.recommended];
 ## 验证
 
 ```bash
-pnpm exec eslint <一个既有源文件>      # 必须看到规则真的报
-pnpm exec eslint .                     # 全量只报告计数
-pnpm exec eslint --print-config <file> # 某文件实际生效的配置，排查 files 不匹配最有用
+<exec> eslint <一个既有源文件>      # 必须看到规则真的报
+<exec> eslint .                     # 全量只报告计数
+<exec> eslint --print-config <file> # 某文件实际生效的配置，排查 files 不匹配最有用
 ```
 
 四个**假绿**点：
 
 - 输出为空且没有跳过提示 → 可能 `files` 没匹配上
 - 只跑单文件，不跑全量（全量只报告计数，不逐条列、不要求修）
-- 确认 `pnpm exec eslint --version` 与项目 `package.json` 一致
+- 确认 `<exec> eslint --version` 与项目 `package.json` 一致
 - **造一个"必须报错"的场景**：只确认"没报错"什么都证明不了

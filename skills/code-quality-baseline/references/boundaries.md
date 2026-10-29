@@ -31,8 +31,8 @@ x boundaries(dependencies): Business layers stay UI-free: a service, store, lib
 ## 安装
 
 ```bash
-pnpm add -D eslint-plugin-boundaries
-pnpm add -D --save-exact eslint-import-resolver-typescript@4.4.5
+<install> eslint-plugin-boundaries
+<install> --save-exact eslint-import-resolver-typescript@4.4.5
 ```
 
 **resolver 必须 pin 精确版本**（`--save-exact`，不用 `^`）。boundaries 通过 `eslint-module-utils` 的 legacy 接口（`interfaceVersion: 2`）加载 resolver；新版若砍掉这个顶层导出，失败方式是**静默失效**——lint 全绿，架构约束形同虚设。pin 住版本让这类变化在升级时显式暴露。
@@ -146,7 +146,7 @@ v7 的三个变更：规则名是 `boundaries/dependencies`（`boundaries/elemen
 ## 验证
 
 ```bash
-pnpm exec eslint <一个违反了层规则的既有文件>
+<exec> eslint <一个违反了层规则的既有文件>
 ```
 
 - **确认哨兵规则在配置里**——这是唯一能自动发现的假绿
